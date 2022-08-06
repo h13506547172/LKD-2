@@ -1,6 +1,6 @@
 import Layout from '@/layout'
 export default {
-  path: '/strategy',
+  path: '/goodsOrder',
   component: Layout,
   children: [{
     path: '',
