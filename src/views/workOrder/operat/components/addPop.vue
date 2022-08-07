@@ -58,9 +58,27 @@
       title="补货详情"
       :visible.sync="replenishmentShow"
       width="40%"
-      :modal='false'
+      :modal="false"
     >
-      
+      <el-table :data="replenishmentData" style="width: 100%">
+        <el-table-column prop="channelCode" label="货道编号"> </el-table-column>
+        <el-table-column prop="skuName" label="商品名称"> </el-table-column>
+        <el-table-column prop="currentCapacity" label="当前数量">
+        </el-table-column>
+        <el-table-column prop="canAdd" label="还可添加"> </el-table-column>
+        <el-table-column label="补满数量">
+          <template #default="scope">
+            <el-input
+              v-if="replenishmentData[scope.$index].expectCapacity"
+              type="number"
+              :max="replenishmentData[scope.$index].canAdd"
+              min="0"
+              v-model="replenishmentData[scope.$index].expectCapacity"
+            ></el-input>
+            <span v-else>此货道缺货</span>
+          </template>
+        </el-table-column>
+      </el-table>
       <span slot="footer" class="dialog-footer">
         <el-button @click="replenishmentShow = false">取 消</el-button>
         <el-button type="primary" @click="replenishmentShow = false"
@@ -100,7 +118,18 @@ export default {
       // 运营人员列表
       worker: [],
       // 补货详情
-      replenishmentShow: false
+      replenishmentShow: false,
+      replenishmentData: [
+        {
+          channelCode: '1-1',
+          skuName: '王小虎',
+          currentCapacity: '6',
+          canAdd: 10,
+          expectCapacity: 4, // 补货数量
+          skuId: '', //商品id
+          skuImage: '',
+        },
+      ],
     }
   },
 
@@ -115,7 +144,23 @@ export default {
       await this.$refs.addForm.validateField('innerCode')
       if (this.addForm.innerCode) {
         const res = await getChannelListAPI(this.addForm.innerCode)
-        console.log(res)
+        // channelCode货道编号 currentCapacity当前数量 sku.skuName商品名称 maxCapacity最大商品数量
+        console.log(res.data)
+        const list = res.data
+        list.forEach((item) => {
+          if (!item.sku) {
+            return this.replenishmentData.push({})
+          }
+          this.replenishmentData.push({
+            channelCode: item.channelCode,
+            skuName: item.sku.skuName,
+            currentCapacity: item.currentCapacity,
+            canAdd: item.maxCapacity - item.currentCapacity,
+            expectCapacity: item.maxCapacity - item.currentCapacity, // 补货数量
+            skuId: item.sku.skuId, //商品id
+            skuImage: item.sku.skuImage,
+          })
+        })
         this.replenishmentShow = true
       }
     },
