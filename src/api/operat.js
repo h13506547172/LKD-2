@@ -50,12 +50,12 @@ export function getAutoSupplyConfigAPI() {
 /**
  *
  * @param {*} data: userId工单负责人id
- * createType：1 
- * desc描述信息 
- * details补货信息 
+ * createType：1
+ * desc描述信息
+ * details补货信息
  * innerCode设备id
  * productType：2 补货工单
- * 
+ *
  * @returns
  */
 export function createOrderAPI(data) {
@@ -64,5 +64,25 @@ export function createOrderAPI(data) {
     method: 'post',
     headers: { 'Content-Type': 'application/json' },
     data,
+  })
+}
+
+/**
+ * 根据售货机获取运营人员列表
+ * @param {*} innerCode 
+ * @returns 
+ */
+export function getOperatorListAPI(innerCode) {
+  return request({
+    url: '/user-service/user/operatorList/' + innerCode,
+    method: 'get',
+  })
+}
+
+// 获取售货机货道详情
+export function getChannelListAPI(innerCode) {
+  return request({
+    url: '/vm-service/channel/channelList/' + innerCode,
+    method: 'get',
   })
 }
