@@ -20,7 +20,7 @@
           <el-option label="完成" value="4"></el-option>
         </el-select>
       </el-form-item>
-      <searchBtn></searchBtn>
+      <searchBtn @click.native="searchFn"></searchBtn>
     </el-form>
   </div>
 </template>
@@ -29,7 +29,7 @@
 import searchBtn from '@/components/button/search.vue'
 export default {
   components: {
-    searchBtn
+    searchBtn,
   },
   data() {
     return {
@@ -42,7 +42,11 @@ export default {
 
   created() {},
 
-  methods: {},
+  methods: {
+    searchFn() {
+      this.$emit('passData', this.operatFormData)
+    },
+  },
 }
 </script>
 
