@@ -2,7 +2,22 @@
   <div class="dashboard-container">
     <div class="app-container">
       <!-- 商品搜索 -->
-      <headerSearch></headerSearch>
+      <div class="search">
+        <el-form :inline="true" :model="form" class="demo-form-inline">
+          <el-form-item label="商品搜索">
+            <el-input v-model.trim="form.searchName"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button
+              type="primary"
+              icon="el-icon-search"
+              @click="goodSearchFn"
+              @keydown.enter="goodSearchFn"
+              >搜索</el-button
+            >
+          </el-form-item>
+        </el-form>
+      </div>
       <!--  -->
       <div class="result">
         <div class="operation">
@@ -205,7 +220,6 @@
 </template>
 
 <script>
-import headerSearch from '@/components/headerSearch'
 import TaskList from '@/components/TaskList'
 // api
 import repeatButton from '@/components/repeatButton/index.vue'
@@ -217,7 +231,7 @@ export default {
       pageIndex: 1,
       dialogVisible: false,
       taskMake: false,
-
+      form: { searchName: '' },
       // 表单
       Form: {
         deviceNum: '',
@@ -232,7 +246,6 @@ export default {
     }
   },
   components: {
-    headerSearch,
     TaskList,
     repeatButton,
   },
@@ -281,6 +294,10 @@ export default {
       this.pageIndex++
       this.taskSearch({ pageIndex: this.pageIndex })
       console.log(this.tableData)
+    },
+    // 搜索
+    goodSearchFn() {
+      //
     },
   },
 }

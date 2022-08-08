@@ -66,9 +66,20 @@ export function transfromData(fileName) {
  * @param {*} skuId
  * @returns promise
  */
-export function reviseData(skuId) {
+export function reviseData(skuId, data) {
   return request({
     url: '/vm-service/sku/' + skuId,
     method: 'PUT',
+    data,
+  })
+}
+
+//上传图片
+
+export function uploadImage(data) {
+  return request({
+    url: '/vm-service/sku/fileUpload',
+    method: 'POST',
+    data: { fileName: data },
   })
 }
