@@ -1,5 +1,15 @@
 <template>
-  <div>对账</div>
+  <div class="dashboard-container">
+    <div class="app-container">
+      <!-- header -->
+      <div class="header">
+        <div class="day">11</div>
+        <div class="day">22</div>
+      </div>
+      <!-- nav -->
+      <div class="nav">33</div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -14,4 +24,10 @@ export default {
 }
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+.app-container {
+  padding: 20px 15px 19px 17px;
+  background-color: #fff;
+  min-height: 700px;
+}
+</style>

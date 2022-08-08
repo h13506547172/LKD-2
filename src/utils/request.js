@@ -49,12 +49,12 @@ service.interceptors.response.use(
   function (res) {
     // 如果是验证码请求没有success
     // if (res.data.success === undefined) {
-    //   return res.config.url
+    //   return res.config.url
     // }
     // 对返回的数据进行解构，如果成功就返回数据
     // const { msg, success } = res.data
     // if (success) {
-    //   return res.data
+    //   return res.data
     // }
     // 失败就抛出错误
     // return Promise.reject(new Error(msg))
