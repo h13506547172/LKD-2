@@ -86,3 +86,31 @@ export function getChannelListAPI(innerCode) {
     method: 'get',
   })
 }
+
+// 获取工单详细
+export function getTaskInfoAPI(taskId) {
+  return request({
+    url: '/task-service/task/taskInfo/' + taskId,
+    method: 'get',
+  })
+}
+
+// 补货详情 
+export function getTaskDetailsAPI(taskId) {
+  return request({
+    url: '/task-service/taskDetails/' + taskId,
+    method: 'get',
+  })
+}
+
+//  取消工单 
+export function cancelAPI(taskId) {
+  return request({
+    url: '/task-service/task/cancel/' + taskId,
+    method: 'POST',
+    data: {
+      desc: "",
+      taskId
+    }
+  })
+}
