@@ -15,8 +15,13 @@
       <el-table-column prop="username" label="运营人员"> </el-table-column>
       <el-table-column prop="createTime" label="创建时间"> </el-table-column>
       <el-table-column label="操作" width="100">
-        <template>
-          <a href="javascript:;" class="infoBtn">查看详情</a>
+        <template #default="scope">
+          <a
+            href="javascript:;"
+            class="infoBtn"
+            @click="detailsShow(scope.$index)"
+            >查看详情</a
+          >
         </template>
       </el-table-column>
     </el-table>
@@ -55,9 +60,19 @@
     </el-dialog>
     <!-- 弹出层新增配置 -->
     <addPop
+      ref="addPop"
       :addDialogVisible="addDialogVisible"
       @addShow="addDialogVisible = $event"
     ></addPop>
+    <!-- 工单详细 -->
+    <operatDetail
+      :operatDetailShow="operatDetailShow"
+      :passTaskStatus="passTaskStatus"
+      :passTaskId="passTaskId"
+      @closeDetail="operatDetailShow = $event"
+      @loadPage="getOperatList(this.currentPage1)"
+      @createShow="createShowFn"
+    ></operatDetail>
   </div>
 </template>
 
@@ -65,6 +80,7 @@
 import addButton from '@/components/button/addButton.vue'
 import Vbutton from '@/components/button/Vbutton.vue'
 import addPop from './addPop.vue'
+import operatDetail from './operatDetail.vue'
 import {
   getOperatListAPI,
   setAutoSupplyConfigAPI,
@@ -73,6 +89,7 @@ import {
 // 时间处理
 import moment from 'moment'
 export default {
+  name: 'detail',
   props: {
     searchCondition: {
       type: Object,
@@ -82,6 +99,7 @@ export default {
     addButton,
     Vbutton,
     addPop,
+    operatDetail,
   },
   data() {
     return {
@@ -111,6 +129,10 @@ export default {
       },
       // 新增工单弹出层
       addDialogVisible: false,
+      // 工单详细弹出层
+      operatDetailShow: false,
+      passTaskStatus: '',
+      passTaskId: '',
     }
   },
 
@@ -172,12 +194,25 @@ export default {
     addPopShow() {
       this.addDialogVisible = true
     },
+    // 显示详情
+    detailsShow(index) {
+      // 传递详情数据
+      this.passTaskId = this.tableData[index].taskId
+      this.passTaskStatus = this.tableData[index].taskStatus
+      this.operatDetailShow = true
+    },
+    // 重新创建
+    async createShowFn(taskId) {
+      // console.log(taskId)
+      await this.$refs.addPop.againCreate(taskId)
+      this.addDialogVisible = true
+    },
   },
   watch: {
     searchCondition: {
       deep: true,
       async handler(val) {
-        console.log(val)
+        // console.log(val)
         await this.getOperatList(1, val.taskCode, val.status)
       },
     },
