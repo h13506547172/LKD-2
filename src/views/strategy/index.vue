@@ -39,7 +39,7 @@
             class="dialogVisible"
           >
             <!-- form -->
-            <el-form ref="form" :model="form" label-width="80px">
+            <el-form ref="form" :model="form" label-width="80px" class="dialog">
               <el-form-item label="策略名称">
                 <el-input v-model="strategyForm.name" placeholder="请输入">
                 </el-input>
