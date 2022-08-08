@@ -171,11 +171,11 @@ export default {
     },
     async prevClickFn(page) {
       this.currentPage1 = page
-      await this.getOperatList(page)
+      await this.getOperatList(page,this.searchCondition.taskCode,this.searchCondition.status)
     },
     async nextClickFn(page) {
       this.currentPage1 = page
-      await this.getOperatList(page)
+      await this.getOperatList(page,this.searchCondition.taskCode,this.searchCondition.status)
     },
     // 设置自动补货阀值
     async setAutoSupplyConfigFn() {
