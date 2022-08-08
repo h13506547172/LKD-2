@@ -1,8 +1,8 @@
 <template>
   <div class="info-bar">
     <div class="btns">
-      <addButton></addButton>
-      <Vbutton title="工单配置"></Vbutton>
+      <addButton @click.native="addPopShow"></addButton>
+      <Vbutton title="工单配置" @click.native="showPopupconfig"></Vbutton>
     </div>
     <!-- 数据列表区域 -->
     <el-table :data="tableData" stripe style="width: 100%">
@@ -10,17 +10,20 @@
       <el-table-column prop="taskCode" label="工单编号"> </el-table-column>
       <el-table-column prop="innerCode" label="设备编号"> </el-table-column>
       <el-table-column prop="taskName" label="工单类型"> </el-table-column>
-      <el-table-column prop="taskStatus" label="工单方式"> </el-table-column>
-      <el-table-column prop="createType" label="工单状态"> </el-table-column>
+      <el-table-column prop="createType" label="工单方式"> </el-table-column>
+      <el-table-column prop="taskStatus" label="工单状态"> </el-table-column>
       <el-table-column prop="username" label="运营人员"> </el-table-column>
       <el-table-column prop="createTime" label="创建时间"> </el-table-column>
-      <el-table-column prop="caozo" label="操作" width="100">
+      <el-table-column label="操作" width="100">
+        <template>
+          <a href="javascript:;" class="infoBtn">查看详情</a>
+        </template>
       </el-table-column>
     </el-table>
     <!-- 分页区域 -->
     <div class="block">
       <span class="demonstration"
-        >共{{ total }}条记录 第 {{ currentPage1 }}/{{totalPage}} 页</span
+        >共{{ total }}条记录 第 {{ currentPage1 }}/{{ totalPage }} 页</span
       >
       <el-pagination
         @prev-click="prevClickFn"
@@ -32,48 +35,82 @@
       >
       </el-pagination>
     </div>
+    <!-- 弹出层工单配置 -->
+    <el-dialog title="工单配置" :visible.sync="dialogVisible" width="40%">
+      <el-form ref="form" :model="configForm" label-width="100px">
+        <el-form-item label="补货警戒线：">
+          <el-input
+            type="number"
+            v-model="configForm.num"
+            class="iptcenter"
+          ></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="setAutoSupplyConfigFn"
+          >确 定</el-button
+        >
+      </span>
+    </el-dialog>
+    <!-- 弹出层新增配置 -->
+    <addPop
+      :addDialogVisible="addDialogVisible"
+      @addShow="addDialogVisible = $event"
+    ></addPop>
   </div>
 </template>
 
 <script>
 import addButton from '@/components/button/addButton.vue'
 import Vbutton from '@/components/button/Vbutton.vue'
-import { getOperatListAPI } from '@/api/operat'
+import addPop from './addPop.vue'
+import {
+  getOperatListAPI,
+  setAutoSupplyConfigAPI,
+  getAutoSupplyConfigAPI,
+} from '@/api/operat'
+// 时间处理
+import moment from 'moment'
 export default {
+  props: {
+    searchCondition: {
+      type: Object,
+    },
+  },
   components: {
     addButton,
     Vbutton,
+    addPop,
   },
   data() {
     return {
-      tableData: [
-        // {
-        //   date: '2016-05-02',
-        //   name: '王小虎',
-        //   address: '上海市普陀区金沙江路 1518 弄',
-        // },
-        // {
-        //   date: '2016-05-04',
-        //   name: '王小虎xx',
-        //   address: '上海市普陀区金沙江路 1517 弄',
-        // },
-        // {
-        //   date: '2016-05-01',
-        //   name: '王xx',
-        //   address: '上海市普陀区金沙江路 1519 弄',
-        // },
-        // {
-        //   date: '2016-05-03',
-        //   name: '王小虎xx',
-        //   address: '上海市普陀区金沙江路 1516 弄',
-        // },
-      ],
+      tableData: [],
       // 分页
       currentPage1: 1,
       total: 1,
       totalPage: 100,
       // 获取的数据
-      currentPageRecords: []
+      currentPageRecords: [],
+      // 工单方式/创建类型
+      createType: {
+        0: '自动',
+        1: '手动',
+      },
+      // 工单状态 taskStatus
+      taskStatus: {
+        1: '待办',
+        2: '进行',
+        3: '取消',
+        4: '完成',
+      },
+      // 弹出层工单配置
+      dialogVisible: false,
+      configForm: {
+        num: 0,
+      },
+      // 新增工单弹出层
+      addDialogVisible: false,
     }
   },
 
@@ -86,11 +123,13 @@ export default {
     async getOperatList(pageIndex, taskCode, status) {
       const res = await getOperatListAPI(pageIndex, taskCode, status)
       // console.log(res)
-      this.total = res.data.totalCount
+      this.total = +res.data.totalCount
       this.totalPage = res.data.totalPage
       this.currentPageRecords = res.data.currentPageRecords
-      let num1 = (this.currentPage1 - 1)*10
-      this.currentPageRecords.forEach((item) =>{
+      let num1 = (this.currentPage1 - 1) * 10
+      // 清空列表数据
+      this.tableData = []
+      this.currentPageRecords.forEach((item) => {
         num1++
         this.tableData.push({
           num: num1,
@@ -99,27 +138,79 @@ export default {
           // 工单类型
           taskName: item.taskType.typeName,
           // 工单方式
-          createType: item.createType,
+          createType: this.createType[item.createType],
           // 工单状态
-          taskStatus: item.taskStatus,
+          taskStatus: this.taskStatus[item.taskStatus],
           username: item.userName,
-          createTime: item.createTime,
-          caozo: '查看详细'
+          createTime: moment(item.createTime).format('YYYY.MM.DD hh:mm:ss'),
+          taskId: item.taskId,
         })
       })
-      
     },
-    prevClickFn(cur) {
-      console.log(cur)
+    async prevClickFn(page) {
+      this.currentPage1 = page
+      await this.getOperatList(page)
     },
-    nextClickFn(cur) {
-      console.log(cur)
+    async nextClickFn(page) {
+      this.currentPage1 = page
+      await this.getOperatList(page)
+    },
+    // 设置自动补货阀值
+    async setAutoSupplyConfigFn() {
+      await setAutoSupplyConfigAPI(+this.configForm.num)
+      this.dialogVisible = false
+      await getOperatList(1)
+    },
+    // 获取补货阈值
+    async showPopupconfig() {
+      this.dialogVisible = true
+      const res = await getAutoSupplyConfigAPI()
+      // console.log(res)
+      this.configForm.num = res.data
+    },
+    // 显示新增弹出层
+    addPopShow() {
+      this.addDialogVisible = true
+    },
+  },
+  watch: {
+    searchCondition: {
+      deep: true,
+      async handler(val) {
+        console.log(val)
+        await this.getOperatList(1, val.taskCode, val.status)
+      },
+    },
+    'configForm.num'(val) {
+      // console.log(val);
+      if (val < 0 || val > 100) {
+        this.configForm.num = 0
+      }
     },
   },
 }
 </script>
 
 <style lang="less" scoped>
+.iptcenter {
+  text-align: center;
+  /deep/ .el-input__inner {
+    text-align: center;
+  }
+}
+.iptBtns {
+  display: flex;
+  position: absolute;
+  right: 0;
+  top: 0;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  span {
+    border: 1px solid #ccc;
+    flex: 1;
+  }
+}
 .info-bar {
   background-color: #fff;
   width: 100%;
@@ -152,6 +243,9 @@ export default {
       border-radius: 2px;
       background-color: #d5ddf8;
     }
+  }
+  .infoBtn {
+    color: #5f84ff;
   }
 }
 </style>
