@@ -67,8 +67,6 @@
         class="borderR"
       >
         <el-form ref="form" :model="myForm" label-width="100px" :rules="rules">
-          <span class="redJH">*</span>
-
           <el-form-item label="区域名称：" prop="regionName">
             <el-input
               v-model="myForm.regionName"
@@ -77,7 +75,7 @@
               show-word-limit
             ></el-input>
           </el-form-item>
-          <span class="redJH">*</span>
+
           <el-form-item label="备注说明：" prop="remark">
             <el-input
               v-model="myForm.remark"
@@ -149,12 +147,8 @@ export default {
       editcontent: null, //点击编辑按钮传入的数据
       //表单验证
       rules: {
-        regionName: [
-          { required: true, message: '请输入活动名称', trigger: 'blur' },
-        ],
-        remark: [
-          { required: true, message: '请输入活动名称', trigger: 'blur' },
-        ],
+        regionName: [{ required: true, message: '请输入', trigger: 'blur' }],
+        remark: [{ required: true, message: '请输入', trigger: 'blur' }],
       },
     }
   },
@@ -226,9 +220,12 @@ export default {
       }
     },
     //点击新建弹出框确认按钮
-    createConf() {
-      this.createVisible = false
-      this.addPlaceList()
+    async createConf() {
+      try {
+        await this.$refs.form.validate()
+        this.createVisible = false
+        this.addPlaceList()
+      } catch (error) {}
     },
     //修改表头
     headerColor() {
@@ -334,12 +331,6 @@ export default {
   color: #ff5a5a;
   margin-right: 10px;
   cursor: pointer;
-}
-.redJH {
-  color: red;
-  position: relative;
-  top: 28px;
-  left: 12px;
 }
 </style>
 <style>
