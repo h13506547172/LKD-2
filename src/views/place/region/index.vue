@@ -206,6 +206,8 @@ export default {
     //获取头部的数据并进行筛选处理
     saerchBtn() {
       this.searchInput = this.searchInput.trim()
+      this.pageIndex = 1
+      this.pageSize = 10
       this.loadPageFn()
     },
     //根据传来的页码刷新数据

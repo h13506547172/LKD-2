@@ -68,3 +68,20 @@ export function delPlaceApi(id) {
     method: 'DELETE',
   })
 }
+
+/**
+ * 点位搜索
+ * @param {*} params
+ *pageIndex
+ *pageSize
+ *name			    点位名称
+ *regionId			区域id
+ * @returns
+ */
+export function getNodeListApi(params) {
+  return request({
+    url: `vm-service/node/search`,
+    method: 'GET',
+    params,
+  })
+}
