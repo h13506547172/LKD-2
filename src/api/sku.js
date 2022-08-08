@@ -59,3 +59,16 @@ export function transfromData(fileName) {
     fileName,
   })
 }
+
+// /vm-service/sku/:skuId
+/**
+ * 修改商品
+ * @param {*} skuId
+ * @returns promise
+ */
+export function reviseData(skuId) {
+  return request({
+    url: '/vm-service/sku/' + skuId,
+    method: 'PUT',
+  })
+}

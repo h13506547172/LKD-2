@@ -310,6 +310,7 @@ import {
   setCreate,
   getTypeSearch,
   transfromData,
+  reviseData,
 } from '@/api/sku'
 import repeatButton from '@/components/repeatButton/index.vue'
 
@@ -355,6 +356,7 @@ export default {
       disabled: false,
       // 文件上传
       fileExelList: [],
+      scopeRowSkuId: '',
     }
   },
   components: {
@@ -440,12 +442,16 @@ export default {
       this.GoodsDialog = true
       this.titleType = '新增商品'
     },
-    // 新建---内部点击确定
+    // 新建---内部点击--确定按钮
     async create() {
       this.GoodsDialog = false
       console.log(this.reviseGoodsForm)
-      if (this.titleType === '新增商品') {
+      if (!this.scopeRowSkuId) {
         await setCreate(this.reviseGoodsForm)
+        this.getSkuSearchList()
+      } else {
+        console.log(this.scopeRowSkuId)
+        await reviseData(this.scopeRowSkuId)
         this.getSkuSearchList()
       }
       // 初始化数据
@@ -462,7 +468,7 @@ export default {
     reviseFn(scopeRow) {
       this.GoodsDialog = true
       this.titleType = '修改商品'
-      // console.log(scopeRow)
+      console.log(scopeRow)
       this.reviseGoodsForm = {
         skuName: scopeRow.skuName,
         skuImage: scopeRow.skuImage,
@@ -470,8 +476,10 @@ export default {
         classId: scopeRow.skuClass.classId,
         unit: scopeRow.unit,
         brandName: scopeRow.brandName,
+
         // 图片
       }
+      this.scopeRowSkuId = scopeRow.skuId
     },
     // 上传文件---内部点击确定
     async transformFn() {
