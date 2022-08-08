@@ -1,11 +1,12 @@
 <template>
   <div class="dashboard-container">
     <div class="app-container">
-      <!-- Q搜索 -->
+      <!-- 商品搜索 -->
       <headerSearch></headerSearch>
       <!--  -->
       <div class="result">
         <div class="operation">
+          <!-- 按钮 -->
           <repeatButton
             type="success"
             size="large"
@@ -22,11 +23,135 @@
             导入数据
           </repeatButton>
           <!-- 弹框 S-->
+          <el-dialog
+            title="新增工单"
+            :visible="dialogVisible"
+            :before-close="handleClose"
+            style="width:630px height:484px"
+            class="dialogVisible"
+          >
+            <el-form label-width="100px">
+              <el-form-item
+                label="设备编号"
+                :rules="{
+                  required: true,
 
+                  trigger: 'blur',
+                }"
+              >
+                <el-input
+                  type="text"
+                  placeholder="请输入内容"
+                  v-model="Form.deviceNum"
+                  maxlength="10"
+                  show-word-limit
+                ></el-input
+              ></el-form-item>
+
+              <el-form-item
+                label="工单类型"
+                :rules="{
+                  required: true,
+
+                  trigger: 'blur',
+                }"
+              >
+                <el-select v-model="Form.type" placeholder="请选择">
+                  <el-option label="区域一" value="shanghai"></el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="补货数量">
+                <el-button style="color: #5f84ff" icon="el-icon-edit-outline"
+                  >补货清单</el-button
+                >
+              </el-form-item>
+              <el-form-item
+                label="运营人员"
+                :rules="{
+                  required: true,
+
+                  trigger: 'blur',
+                }"
+              >
+                <el-select v-model="Form.people" placeholder="请选择">
+                  <el-option label="区域一" value="shanghai"></el-option>
+                </el-select>
+              </el-form-item>
+
+              <el-form-item
+                label="备注"
+                prop="desc"
+                :rules="{
+                  required: true,
+
+                  trigger: 'blur',
+                }"
+              >
+                <el-input
+                  type="textarea"
+                  placeholder="请输入备注（不超过40字）"
+                  v-model="Form.desc"
+                  maxlength="30"
+                  show-word-limit
+                >
+                </el-input>
+              </el-form-item>
+            </el-form>
+
+            <span slot="footer" class="dialog-footer">
+              <span
+                slot="footer"
+                class="dialog-footer operation"
+                style="justify-content: center"
+              >
+                <repeatButton
+                  type="taskMake"
+                  size="large"
+                  @layclick="dialogVisible = false"
+                  >取消</repeatButton
+                >
+                <repeatButton
+                  type="success"
+                  size="large"
+                  @layclick="dialogVisible = false"
+                >
+                  确定</repeatButton
+                >
+              </span>
+            </span>
+          </el-dialog>
           <!-- 弹框 E-->
 
           <!-- 弹框 S-->
-
+          <el-dialog
+            title="工单配置"
+            :visible="taskMake"
+            :before-close="taskMakeFn"
+            style="width:630px height:484px"
+            class="dialogVisible"
+          >
+            <span slot="footer" class="dialog-footer">
+              <span
+                slot="footer"
+                class="dialog-footer operation"
+                style="justify-content: center"
+              >
+                <repeatButton
+                  type="taskMake"
+                  size="large"
+                  @layclick="taskMake = false"
+                  >取消</repeatButton
+                >
+                <repeatButton
+                  type="success"
+                  size="large"
+                  @layclick="taskMake = false"
+                >
+                  确定</repeatButton
+                >
+              </span>
+            </span>
+          </el-dialog>
           <!-- 弹框 E-->
         </div>
         <!--  Q运营列表 -->

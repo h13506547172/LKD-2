@@ -1,13 +1,8 @@
 <template>
   <div class="search">
-    <el-form :inline="true" :model="formInline" class="demo-form-inline">
+    <el-form :inline="true" :model="form" class="demo-form-inline">
       <el-form-item label="商品搜索">
-        <el-select v-model="formInline.status" placeholder="请选择">
-          <el-option label="待办" value="待办"></el-option>
-          <el-option label="进行" value="进行"></el-option>
-          <el-option label="取消" value="取消"></el-option>
-          <el-option label="完成" value="完成"></el-option>
-        </el-select>
+        <el-input v-model="form.searchName"></el-input>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search">搜索</el-button>
@@ -20,9 +15,8 @@
 export default {
   data() {
     return {
-      formInline: {
-        taskId: '',
-        status: '',
+      form: {
+        searchName: '',
       },
     }
   },
