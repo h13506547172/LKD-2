@@ -97,10 +97,9 @@
         :visible.sync="createVisible"
         width="35%"
         class="borderR"
+        @close="closeFn"
       >
-        <el-form ref="form" :model="myForm" label-width="100px" :rules="rules">
-          <span class="redJH">*</span>
-
+        <el-form ref="form" :model="myForm" label-width="110px" :rules="rules">
           <el-form-item label="点位名称：" prop="name">
             <el-input
               v-model="myForm.name"
@@ -109,10 +108,78 @@
               show-word-limit
             ></el-input>
           </el-form-item>
-          <span class="redJH">*</span>
-          <el-form-item label="详细地址：" prop="addr">
+
+          <el-form-item label="所在区域：" prop="regionId">
+            <span class="hight">
+              <el-select
+                v-model="myForm.regionId"
+                filterable
+                placeholder="请选择"
+                clearable
+                @clear="clearFn"
+              >
+                <el-option
+                  v-for="item in nodeList"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                >
+                </el-option>
+              </el-select>
+            </span>
+          </el-form-item>
+
+          <el-form-item label="所属商圈：" prop="businessId">
+            <span class="hight">
+              <el-select
+                v-model="myForm.businessId"
+                filterable
+                placeholder="请选择"
+                clearable
+                @clear="clearFn"
+              >
+                <el-option
+                  v-for="item in businessTypeList"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                >
+                </el-option>
+              </el-select>
+            </span>
+          </el-form-item>
+
+          <el-form-item label="归属合作商：" prop="ownerId">
+            <span class="hight">
+              <el-select
+                v-model="myForm.ownerId"
+                filterable
+                placeholder="请选择"
+                clearable
+                @change="getOwnerIdFn"
+                @clear="clearFn"
+              >
+                <el-option
+                  v-for="item in partnerList"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                >
+                </el-option>
+              </el-select>
+            </span>
+          </el-form-item>
+
+          <el-form-item label="详细地址：" prop="addrInfo">
+            <wl-address
+              ref="wladdress"
+              class="my-wl-address"
+              :type="address_mode"
+              :address.sync="address_data"
+            >
+            </wl-address>
             <el-input
-              v-model="myForm.addr"
+              v-model="myForm.addrInfo"
               maxlength="60"
               show-word-limit
               type="textarea"
@@ -143,23 +210,39 @@
 
 <script>
 import myBtn from '@/components/myBtn.vue'
-import { getNodeListApi, getPlaceList } from '@/api/place'
-import infoPop from './components/infoPop.vue'
 
+import {
+  getNodeListApi,
+  getPlaceList,
+  getBusinessTypeApi,
+  getPartnerListApi,
+  addNodeApi,
+  editNodeApi,
+  getVmListApi,
+  delNodeApi,
+} from '@/api/place'
+import infoPop from './components/infoPop.vue'
 export default {
   name: 'node',
-  components: {
-    myBtn,
-    infoPop,
-  },
+
   data() {
     return {
       myForm: {
-        /*  regionName: '', //添加地区的名字
-        remark: '', //添加地区的备注 */
-        name: '',
-        addr: '',
+        name: '', //点位名称
+        regionId: '', //所在区域
+        businessId: '', //所属商圈
+        ownerId: '', //合作商ID
+        ownerName: '', //合作商名字
+        addr: '', //选择器地址
+        addrInfo: '', //详细地址
+        id: '',
       },
+      //三级地区联级
+      address_mode: 'cascader', // default普通 cascader级联
+      address_data: '', // 选中地址
+      owner: {}, //合作商选中信息
+      partnerList: [], //归属合作商列表
+      businessTypeList: [], //所属商圈的列表
       infoVisible: false, //查看详情弹出框
       dialogVisible: false, //弹出框
       createVisible: false, //新建弹出框
@@ -177,17 +260,31 @@ export default {
       editcontent: null, //点击编辑按钮传入的数据
       //表单验证
       rules: {
-        regionName: [
-          { required: true, message: '请输入活动名称', trigger: 'blur' },
-        ],
-        remark: [
-          { required: true, message: '请输入活动名称', trigger: 'blur' },
-        ],
+        name: [{ required: true, message: '请输入', trigger: 'blur' }],
+        regionId: [{ required: true, message: '请输入', trigger: 'change' }],
+        businessId: [{ required: true, message: '请输入', trigger: 'change' }],
+        ownerId: [{ required: true, message: '请输入', trigger: 'change' }],
+        ownerName: [{ required: true, message: '请输入', trigger: 'blur' }],
+        addrInfo: [{ required: true, message: '请输入', trigger: 'blur' }],
       },
       nodeList: [], //搜索栏2的下拉菜单
     }
   },
-
+  watch: {
+    address_data(val) {
+      if (val === '') return
+      const res = JSON.parse(val).map((item) => item.name)
+      if (res[0] === res[1]) {
+        res.shift()
+      }
+      this.myForm.addr = res.join('-')
+    },
+  },
+  computed: {},
+  components: {
+    myBtn,
+    infoPop,
+  },
   created() {
     //获取类目
     this.getNodeType()
@@ -196,6 +293,15 @@ export default {
   },
 
   methods: {
+    //关闭窗口
+    closeFn() {
+      this.$refs.wladdress.cascader_val = []
+    },
+    //新增按钮中的归属合作商
+    getOwnerIdFn(val) {
+      const res = this.partnerList.filter((item) => item.id == val)
+      this.myForm.ownerName = res[0].name
+    },
     //清空搜索栏触发刷新
     clearFn() {
       // this.getNodeList()
@@ -203,35 +309,66 @@ export default {
     },
 
     //点击新建按钮
-    addCreate() {
-      if (this.$refs.form !== undefined) this.$refs.form.resetFields()
+    async addCreate() {
+      //获取商圈类型
+      const { data } = await getBusinessTypeApi()
+      this.businessTypeList = data
+      //获取合作商数据
+      const {
+        data: { currentPageRecords },
+      } = await getPartnerListApi()
+      this.partnerList = currentPageRecords
+      if (this.$refs.form !== undefined) {
+        this.$refs.form.resetFields()
+      }
       this.addTitle = '新增点位'
-      this.myForm.regionName = ''
-      this.myForm.remark = ''
       this.createVisible = true
     },
     //查看详情按钮
     async infoBtnFn(val) {
-      const res = await getPlaceInfoApi(val.id)
-      this.info = res.data.currentPageRecords
-      this.infoName = val.name
+      const res = await getVmListApi(val.id)
+      this.info = res.data
       this.infoVisible = true
     },
     //修改按钮
-    editBtnFn(val) {
+    async editBtnFn(val) {
       if (this.$refs.form !== undefined) this.$refs.form.resetFields()
-      this.editcontent = val
-      this.myForm.regionName = val.name
-      this.myForm.remark = val.remark
+      //点击修改后状态回显↓
+      this.myForm.name = val.name
+      this.myForm.regionId = val.regionId
+      this.myForm.businessId = val.businessType.id
+      this.myForm.ownerId = val.ownerId
+      this.myForm.ownerName = val.ownerName
+      this.myForm.id = val.id
+      const addrR = val.addr.substring(val.addr.lastIndexOf('-') + 1)
+      this.myForm.addrInfo = addrR
+      this.myForm.addr = val.addr.substring(0, val.addr.lastIndexOf('-'))
+      /*  let addrDeep = val.addr.substring(0, val.addr.lastIndexOf('-'))
+      addrDeep = addrDeep.split('-')
+      let myRes = []
+      addrDeep.forEach((item) => {
+        myRes.push({ name: item, code: '1' })
+      })
+      console.log(JSON.stringify(myRes))
+      this.$refs.wladdress.cascader_val = JSON.stringify(myRes) */
+      // this.$refs.wladdress.cascader_val = [name:]
+      //获取商圈类型
+      const { data } = await getBusinessTypeApi()
+      this.businessTypeList = data
+      //获取合作商数据
+      const {
+        data: { currentPageRecords },
+      } = await getPartnerListApi()
+      this.partnerList = currentPageRecords
       this.addTitle = '修改点位'
       this.createVisible = true
     },
     //删除按钮
     async delBtnFn(val) {
       try {
-        await delPlaceApi(val.id)
+        await delNodeApi(val.id)
         this.$message.success('删除成功~')
-        this.getNodeList()
+        this.loadPageFn()
       } catch (error) {}
     },
 
@@ -258,10 +395,13 @@ export default {
         this.$message.error('请求失败')
       }
     },
-    //点击新建弹出框确认按钮
-    createConf() {
-      this.createVisible = false
-      this.addPlaceList()
+    //点击新建弹出框的确认按钮*****************
+    async createConf() {
+      try {
+        await this.$refs.form.validate()
+        this.createVisible = false
+        this.addPlaceList()
+      } catch (error) {}
     },
     //修改表头
     headerColor() {
@@ -302,17 +442,31 @@ export default {
     //新建区域
     async addPlaceList() {
       try {
-        const send = {
-          regionName: this.myForm.regionName, //添加地区的名字
-          remark: this.myForm.remark, //添加地区的备注
-        }
-        await this.$refs.form.validate()
         if (this.addTitle == '新增点位') {
-          await addPlaceListApi(send)
+          const send = {
+            name: this.myForm.name, //点位名称
+            regionId: this.myForm.regionId, //所在区域
+            businessId: this.myForm.businessId, //所属商圈
+            ownerId: this.myForm.ownerId, //合作商ID
+            ownerName: this.myForm.ownerName, //合作商名字
+            addr: this.myForm.addr + '-' + this.myForm.addrInfo, //选择器地址
+            createUserId: 1,
+          }
+          await addNodeApi(send)
           this.$message.success('添加成功~')
           this.getNodeList()
         } else {
-          const res = await editPlaceInfoApi(this.editcontent.id, send)
+          const send = {
+            name: this.myForm.name, //点位名称
+            regionId: this.myForm.regionId, //所在区域
+            businessId: this.myForm.businessId, //所属商圈
+            ownerId: this.myForm.ownerId, //合作商ID
+            ownerName: this.myForm.ownerName, //合作商名字
+            addr: this.myForm.addr + '-' + this.myForm.addrInfo, //选择器地址
+            createUserId: this.$store.state.user.userId,
+          }
+          await editNodeApi(this.myForm.id, send)
+          this.$message.success('修改成功~')
           this.loadPageFn()
         }
       } catch (error) {
@@ -324,6 +478,11 @@ export default {
 </script>
 
 <style lang="less" scoped>
+//三级地区
+/deep/.el-cascader {
+  width: 100%;
+}
+
 .box-card {
   margin-bottom: 30px;
 }
@@ -338,6 +497,14 @@ export default {
   line-height: 40px;
 }
 
+.borderR {
+  .hight {
+    line-height: 40px;
+    .el-select {
+      width: 100%;
+    }
+  }
+}
 /deep/.el-table th > .cell {
   font-weight: 400;
   color: rgb(102, 102, 102);
@@ -381,12 +548,12 @@ export default {
   margin-right: 10px;
   cursor: pointer;
 }
-.redJH {
-  color: red;
-  position: relative;
-  top: 28px;
-  left: 12px;
-}
+// .redJH {
+//   color: red;
+//   position: relative;
+//   top: 28px;
+//   left: 0;
+// }
 </style>
 <style>
 .el-dialog {

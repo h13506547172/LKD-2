@@ -85,3 +85,86 @@ export function getNodeListApi(params) {
     params,
   })
 }
+
+/**
+ * 商圈列表
+ * @param {*} params
+ * @returns
+ */
+export function getBusinessTypeApi() {
+  return request({
+    url: `vm-service/businessType`,
+    method: 'GET',
+  })
+}
+
+/**
+ * 合作商搜索
+ * @returns
+ */
+export function getPartnerListApi() {
+  return request({
+    url: `user-service/partner/search`,
+    method: 'GET',
+    params: { pageSize: 100000 },
+  })
+}
+
+/**
+ * 新增点位
+ * @param {*} paramsdata
+ *name	          名称
+ *addr	          详细地址
+ *areaCode	      	最后一级区域Id
+ *createUserId    创建人Id
+ *regionId	      所属区域Id
+ *businessId	    	所属商圈Id
+ *ownerId	        合作商Id
+ *ownerName	      	合作商名称
+ * @returns
+ */
+export function addNodeApi(data) {
+  return request({
+    url: `vm-service/node`,
+    method: 'POST',
+    data,
+  })
+}
+
+/**
+ * 修改点位
+ * @param {*} id
+ * @param {*} data
+ * @returns
+ */
+export function editNodeApi(id, data) {
+  return request({
+    url: `vm-service/node/${id}`,
+    method: 'PUT',
+    data,
+  })
+}
+
+/**
+ * 点位详情
+ * @param {*} id
+ * @returns
+ */
+export function getVmListApi(id) {
+  return request({
+    url: `vm-service/node/vmList/${id}`,
+    method: 'GET',
+  })
+}
+
+/**
+ * 删除点位
+ * @param {*} id
+ * @returns
+ */
+export function delNodeApi(id) {
+  return request({
+    url: `vm-service/node/${id}`,
+    method: 'DELETE',
+  })
+}
