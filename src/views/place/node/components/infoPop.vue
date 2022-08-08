@@ -1,32 +1,35 @@
 <template>
   <el-dialog
-    title="区域详情"
+    title="点位详情"
     :visible="infoVisible"
     width="35%"
     class="borderR"
     @close="onClose"
   >
     <el-form ref="form" label-width="100px">
-      <el-form-item label="区域名称："> {{ infoName }}</el-form-item>
-      <el-form-item label="包含点位：">
-        <el-table
-          :data="info"
-          style="width: 100%"
-          empty-text="暂无数据"
-          :header-cell-style="headerColor"
-          :cell-style="cellStyle"
-          :row-class-name="tableRowClassName"
-        >
-          <el-table-column label="序号" width="180">
-            <template v-slot="scope">
-              {{ scope.$index + 1 }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="name" label="点位名称" width="180">
-          </el-table-column>
-          <el-table-column prop="vmCount" label="设备数量"> </el-table-column>
-        </el-table>
-      </el-form-item>
+      <el-table
+        :data="info"
+        style="width: 100%"
+        empty-text="暂无数据"
+        :header-cell-style="headerColor"
+        :cell-style="cellStyle"
+        :row-class-name="tableRowClassName"
+      >
+        <el-table-column label="序号" width="70">
+          <template v-slot="scope">
+            {{ scope.$index + 1 }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="innerCode" label="机器编号"> </el-table-column>
+        <el-table-column prop="vmStatus" label="设备状态"> </el-table-column>
+        <el-table-column label="最后一次供货时间">
+          <template v-slot="scope">
+            {{
+              scope.row.lastSupplyTime.replace(/T/gi, ' ').replace(/-/gi, '.')
+            }}
+          </template>
+        </el-table-column>
+      </el-table>
     </el-form>
   </el-dialog>
 </template>
