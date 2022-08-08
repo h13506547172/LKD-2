@@ -1,7 +1,7 @@
 <template>
   <div class="info-bar">
     <div class="btns">
-      <addButton></addButton>
+      <addButton @click.native="addFn"></addButton>
       <Vbutton title="批量操作" @click.native="getpolicyList"></Vbutton>
     </div>
     <!-- 数据列表区域 -->
@@ -64,13 +64,44 @@
         <el-button type="primary" @click="confirmStrategyFn">确 定</el-button>
       </span>
     </el-dialog>
+    <!-- 弹出层新增设备 -->
+    <el-dialog
+      title="新增设备"
+      :visible.sync="addDialogShow"
+      width="40%"
+      :before-close="closeAddDialog"
+    >
+      <el-form ref="form" :model="addEquipmentForm" label-width="80px">
+        <el-form-item label="设备编号">
+          <div>系统自动生成</div>
+        </el-form-item>
+        <el-form-item label="选择型号">
+          <el-select placeholder="请选择">
+            <el-option label="区域一" value="shanghai"></el-option>
+            <el-option label="区域二" value="beijing"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="选择点位">
+          <el-select placeholder="请选择">
+            <el-option label="区域一" value="shanghai"></el-option>
+            <el-option label="区域二" value="beijing"></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="closeAddDialog">取 消</el-button>
+        <el-button type="primary" @click="addDialogShow = false"
+          >确 定</el-button
+        >
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import addButton from '@/components/button/addButton.vue'
 import Vbutton from '@/components/button/Vbutton.vue'
-import { getpolicyListAPI, getVMListAPI } from '@/api/equipment'
+import { applyPolicyAPI, getpolicyListAPI, getVMListAPI } from '@/api/equipment'
 export default {
   props: {
     innerCode: {
@@ -100,6 +131,9 @@ export default {
       // 策略列表
       strategyForm: [],
       currentStrategy: '',
+      // 新增设备
+      addDialogShow: false,
+      addEquipmentForm: {},
     }
   },
 
@@ -131,7 +165,7 @@ export default {
       await this.getVMList(page)
     },
     selectionChangeFn(sec) {
-      // console.log(sec)
+      // 选中的数据
       this.selectList = sec
     },
     // 获取策略列表
@@ -150,14 +184,27 @@ export default {
       this.batchShow = false
     },
     // 确认策略
-    confirmStrategyFn() {
+    async confirmStrategyFn() {
       // console.log(this.currentStrategy)
       let innerCodeList = []
-       this.selectList.forEach((item) =>{
+      this.selectList.forEach((item) => {
         innerCodeList.push(item.innerCode)
       })
-      // console.log(innerCodeList)
-      // applyPolicyAPI
+      // 发送请求更改策略并更新数据
+      await applyPolicyAPI({
+        innerCodeList: innerCodeList,
+        policyId: this.currentStrategy,
+      })
+      this.batchShow = false
+      await getVMList(this.currentPage)
+    },
+    // 关闭新增设备对话框
+    closeAddDialog() {
+      this.addDialogShow = false
+    },
+    // 新增设备
+    addFn() {
+      this.addDialogShow = true
     },
   },
   watch: {
@@ -206,10 +253,13 @@ export default {
       background-color: #d5ddf8;
     }
   }
-  .dialog {
-    .el-select {
-      width: 100%;
-    }
+  // .dialog {
+  //   .el-select {
+  //     width: 100%;
+  //   }
+  // }
+  .el-select {
+    width: 100%;
   }
 }
 </style>
