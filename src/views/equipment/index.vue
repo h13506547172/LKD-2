@@ -1,25 +1,32 @@
 <template>
   <div>
-    <searchBar></searchBar>
-    <infoBar></infoBar>
+    <searchBar @passData="passDataFn"></searchBar>
+    <infoBar :innerCode='innerCode'></infoBar>
   </div>
 </template>
 
 <script>
-import searchBar from "./components/searchBar.vue";
-import infoBar from "./components/infoBar.vue";
+import searchBar from './components/searchBar.vue'
+import infoBar from './components/infoBar.vue'
 export default {
   components: {
     searchBar,
-    infoBar
+    infoBar,
   },
   data() {
-    return {}
+    return {
+      innerCode: '',
+    }
   },
 
   created() {},
 
-  methods: {},
+  methods: {
+    passDataFn(e) {
+      // 传递搜索数据
+      this.innerCode = e
+    },
+  },
 }
 </script>
 

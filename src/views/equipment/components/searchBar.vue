@@ -2,32 +2,35 @@
   <div class="search">
     <el-form ref="Form" :model="FormData" label-width="80px" class="Form">
       <el-form-item label="设备编号">
-        <el-input v-model="FormData.taskCode" placeholder="请输入"></el-input>
+        <el-input v-model="FormData.innerCode" placeholder="请输入"></el-input>
       </el-form-item>
     </el-form>
-    <searchBtn></searchBtn>
+    <searchBtn @click.native="passDataFn"></searchBtn>
   </div>
 </template>
 
 <script>
-import search from "@/components/button/search.vue";
+import search from '@/components/button/search.vue'
 export default {
   components: {
-    searchBtn:search
+    searchBtn: search,
   },
   props: {},
   data() {
     return {
       FormData: {
-        taskCode: '',
-        status: '',
+        innerCode: '',
       },
     }
   },
 
   created() {},
 
-  methods: {},
+  methods: {
+    passDataFn() {
+      this.$emit('passData',this.FormData.innerCode)
+    },
+  },
 }
 </script>
 

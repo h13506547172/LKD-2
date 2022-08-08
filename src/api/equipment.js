@@ -18,3 +18,21 @@ export function getVMListAPI(pageIndex, innerCode) {
     },
   })
 }
+
+// 策略列表  /vm-service/policy
+export function getpolicyListAPI() {
+  return request({
+    url: '/vm-service/policy',
+    method: 'get',
+  })
+}
+
+// 确认策略 
+
+export function applyPolicyAPI(data) {
+  return request({
+    url: '/vm-service/vm/applyPolicy',
+    method: 'post',
+    data
+  })
+}

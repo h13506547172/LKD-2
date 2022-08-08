@@ -2,7 +2,7 @@
   <div class="info-bar">
     <div class="btns">
       <addButton></addButton>
-      <Vbutton title="批量操作"></Vbutton>
+      <Vbutton title="批量操作" @click.native="getpolicyList"></Vbutton>
     </div>
     <!-- 数据列表区域 -->
     <el-table
@@ -39,14 +39,44 @@
       >
       </el-pagination>
     </div>
+    <!-- 弹出层批量操作 -->
+    <el-dialog
+      title="批量操作"
+      :visible.sync="batchShow"
+      width="40%"
+      :before-close="closeBatchFn"
+      class="dialog"
+    >
+      <el-form ref="form" label-width="80px">
+        <el-form-item label="活动区域">
+          <el-select v-model="currentStrategy" placeholder="请策略">
+            <el-option
+              v-for="item in strategyForm"
+              :key="item.policyId"
+              :label="item.policyName"
+              :value="item.policyId"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="batchShow = false">取 消</el-button>
+        <el-button type="primary" @click="confirmStrategyFn">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import addButton from '@/components/button/addButton.vue'
 import Vbutton from '@/components/button/Vbutton.vue'
-import { getVMListAPI } from '@/api/equipment'
+import { getpolicyListAPI, getVMListAPI } from '@/api/equipment'
 export default {
+  props: {
+    innerCode: {
+      type: String || Number,
+    },
+  },
   components: {
     addButton,
     Vbutton,
@@ -63,17 +93,24 @@ export default {
         1: '运营',
         3: '撤机',
       },
+      // 选中的列表
+      selectList: [],
+      // 批量操作弹出层
+      batchShow: false,
+      // 策略列表
+      strategyForm: [],
+      currentStrategy: '',
     }
   },
 
   async created() {
-    await this.getOperatList()
+    await this.getVMList(this.currentPage)
   },
 
   methods: {
     // 获取数据
-    async getOperatList() {
-      const res = await getVMListAPI(this.currentPage)
+    async getVMList(page, innerCode) {
+      const res = await getVMListAPI(page, innerCode)
       // console.log(res.data);
       this.total = +res.data.totalCount
       this.totalPage = +res.data.totalPage
@@ -85,14 +122,48 @@ export default {
         item.vmStatus = this.vmStatus[item.vmStatus]
       })
     },
-    prevClickFn(cur) {
-      this.currentPage = cur
+    async prevClickFn(page) {
+      this.currentPage = page
+      await this.getVMList(page)
     },
-    nextClickFn(cur) {
-      console.log(cur)
+    async nextClickFn(page) {
+      this.currentPage = page
+      await this.getVMList(page)
     },
     selectionChangeFn(sec) {
-      console.log(sec)
+      // console.log(sec)
+      this.selectList = sec
+    },
+    // 获取策略列表
+    async getpolicyList() {
+      if (this.selectList.length > 0) {
+        const res = await getpolicyListAPI()
+        // console.log(res)
+        this.strategyForm = res.data
+        this.batchShow = true
+      } else {
+        this.$message.warning('请勾选售货机')
+      }
+    },
+    // 关闭批量操作
+    closeBatchFn() {
+      this.batchShow = false
+    },
+    // 确认策略
+    confirmStrategyFn() {
+      // console.log(this.currentStrategy)
+      let innerCodeList = []
+       this.selectList.forEach((item) =>{
+        innerCodeList.push(item.innerCode)
+      })
+      // console.log(innerCodeList)
+      // applyPolicyAPI
+    },
+  },
+  watch: {
+    // 搜索设备
+    innerCode(val) {
+      this.getVMList(1, val)
     },
   },
 }
@@ -133,6 +204,11 @@ export default {
       margin: 0 16px;
       border-radius: 2px;
       background-color: #d5ddf8;
+    }
+  }
+  .dialog {
+    .el-select {
+      width: 100%;
     }
   }
 }
