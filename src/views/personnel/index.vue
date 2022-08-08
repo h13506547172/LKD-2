@@ -31,7 +31,7 @@
       >
       <!-- 弹层e -->
       <el-dialog title="新增人员" :visible.sync="dialogFormVisible">
-        <el-form :model="formData">
+        <el-form :model="formData" ref="form">
           <el-form-item label="*人员名称" :label-width="formLabelWidth">
             <el-input
               v-model="formData.userName"
@@ -42,12 +42,12 @@
           </el-form-item>
           <el-form-item label="*角色" :label-width="formLabelWidth">
             <el-select
-              v-model="formData.regionName"
+              v-model="formData.roleId"
               style="width: 100%"
-              placeholder="请选择活动区域"
+              placeholder="请选择角色"
             >
-              <el-option label="运营员" value="shanghai"></el-option>
-              <el-option label="维修员" value="shanghai"></el-option>
+              <el-option label="运营员" :value="Number(1)"></el-option>
+              <el-option label="维修员" :value="Number(2)"></el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="*联系电话" :label-width="formLabelWidth">
@@ -60,15 +60,15 @@
           </el-form-item>
           <el-form-item label="*负责区域" :label-width="formLabelWidth">
             <el-select
-              v-model="formData.role"
+              v-model="formData.regionId"
               style="width: 100%"
-              placeholder="请选择活动区域"
+              placeholder="请选择区域"
             >
               <el-option
                 v-for="item in tableAddress"
                 :key="item.id"
                 :label="item.regionName"
-                value="shanghai"
+                :value="item.regionId"
               ></el-option>
             </el-select>
           </el-form-item>
@@ -76,7 +76,7 @@
           <span class="headtext">*头像</span>
           <el-upload
             class="avatar-uploader"
-            action="http://localhost:9528/api/user-service/"
+            action="https://jsonplaceholder.typicode.com/posts/"
             :show-file-list="true"
             :on-success="handleAvatarSuccess"
             :before-upload="beforeAvatarUpload"
@@ -93,7 +93,12 @@
       <!-- 弹层s -->
 
       <el-table :data="tableData" :border="false" style="width: 100%">
-        <el-table-column type="index" label="序号" width="80">
+        <el-table-column
+          type="index"
+          :index="indexpage"
+          label="序号"
+          width="80"
+        >
         </el-table-column>
         <el-table-column prop="userName" label="人员名称" width="300">
         </el-table-column>
@@ -104,26 +109,37 @@
         <el-table-column prop="mobile" label="联系电话" width="300">
         </el-table-column>
         <el-table-column fixed="right" label="操作" width="100">
-          <template>
-            <el-button type="text" size="small">修改</el-button>
-            <el-button type="text" size="small">删除</el-button>
+          <template v-slot="scoped">
+            <el-button type="text" size="small" @click="modifyFn(scoped.$index)"
+              >修改</el-button
+            >
+            <el-button type="text" size="small" @click="delFn(scoped.$index)"
+              >删除</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
       <!-- 页码 -->
       <div class="Page">
         <div>
-          共100条数据 <span>{{ pageIndex }}/4页</span>
+          共{{ datapage.totalCount }}条数据
+          <span>{{ pageIndex }}/{{ datapage.totalPage }}页</span>
         </div>
-        <div class="butn butn1" @click="previousFn">上一页</div>
-        <div class="butn" @click="nextFn">下一页</div>
+          <el-button type="info"  @click="previousFn"  disabled>上一页</el-button>
+        <!-- <button class="butn butn1" @click="previousFn" >上一页</button> -->
+        <button class="butn" @click="nextFn" :disable='falg'>下一页</button>
       </div>
     </el-card>
   </div>
 </template>
 
 <script>
-import { getPersonnel, AddPersonnel } from '@/api/personnel'
+import {
+  getPersonnel,
+  AddPersonnel,
+  editDeptsApi,
+  delPersonnel,
+} from '@/api/personnel'
 export default {
   data() {
     return {
@@ -131,18 +147,19 @@ export default {
       tableAddress: [],
       input: '',
       pageIndex: 1,
-      data: {},
+      disabled:false,
+      datapage: {},
       imageUrl: '',
       dialogTableVisible: true,
       dialogFormVisible: false,
       formData: {
-        userName: '',
-        regionName: '',
+        image: 'http://likede2-java.itheima.net/image/1659862212695.jpg',
         mobile: '',
-        role: '',
-        imageUrl: '',
-        status: false,
+        regionId: '',
         regionName: '',
+        roleId: '',
+        status: false,
+        userName: '',
       },
       formLabelWidth: '120px',
     }
@@ -155,21 +172,28 @@ export default {
     async getPersonnel() {
       const res = await getPersonnel()
       this.tableData = res.data.currentPageRecords
-      console.log(this.tableData)
-      this.data = res.data
+      console.log(res.data)
+      this.datapage = res.data
+    },
+    // 页码
+    indexpage(index) {
+      return this.pageIndex * 10 - 9 + index
     },
     // 下一页
     async nextFn() {
-      this.pageIndex++
-      console.log(this.pageIndex)
+        this.pageIndex++
+      if (this.pageIndex === this.datapage.totalPage){
+        this.disabled = true
+      }
+      // console.log(this.pageIndex)
       const res = await getPersonnel(this.pageIndex, 10)
       this.tableData = res.data.currentPageRecords
       this.pageIndex = res.data.pageIndex
     },
     // 上一页
     async previousFn() {
-      if (this.pageIndex <= 1) return
       this.pageIndex--
+      if (this.pageIndex === 1) return
       const res = await getPersonnel(this.pageIndex++, 10)
       this.tableData = res.data.currentPageRecords
     },
@@ -186,18 +210,38 @@ export default {
     async newlyaddFn() {
       this.dialogFormVisible = true
       const res = await getPersonnel(this.pageIndex, 100000)
-      console.log(res)
-      this.tableAddress = res.data.currentPageRecords
+      // console.log(res)
+      this.tableAddress = res.data.currentPageRecords.reduce((cur, next) => {
+        this.tableAddress[next.regionName]
+          ? ''
+          : (this.tableAddress[next.regionName] = true && cur.push(next))
+        return cur
+      }, [])
+      // console.log(this.tableAddress)
+      // this.tableAddress = res.data.currentPageRecords
     },
     // 确定
     async AddOKFn() {
       this.dialogFormVisible = false
-      console.log(this.formData)
-      // await AddPersonnel(this.formData)
+      await this.$refs.form.validate()
+      if (this.formData.id) {
+        const res = this.tableAddress.filter(
+          (item) => item.regionId === this.formData.regionId,
+        )
+        this.formData.regionName = res[0].regionName
+        await editDeptsApi(this.formData)
+      } else {
+        const res = this.tableAddress.filter(
+          (item) => item.regionId === this.formData.regionId,
+        )
+        this.formData.regionName = res[0].regionName
+        await AddPersonnel(this.formData)
+      }
     },
     // 上传图片
     handleAvatarSuccess(res, file) {
       this.imageUrl = URL.createObjectURL(file.raw)
+      this.formData.image = this.imageUrl
     },
     beforeAvatarUpload(file) {
       const isJPG = file.type === 'image/jpeg'
@@ -210,6 +254,26 @@ export default {
         this.$message.error('上传头像图片大小不能超过 2MB!')
       }
       return isJPG && isLt2M
+    },
+    // 修改
+    async modifyFn(index) {
+      this.dialogFormVisible = true
+      console.log(this.tableData[index])
+      this.formData = this.tableData[index]
+      const res = await getPersonnel(this.pageIndex, 100000)
+      // console.log(res)
+      this.tableAddress = res.data.currentPageRecords.reduce((cur, next) => {
+        this.tableAddress[next.regionName]
+          ? ''
+          : (this.tableAddress[next.regionName] = true && cur.push(next))
+        return cur
+      }, [])
+    },
+    // 删除
+    async delFn(index) {
+      this.formData = this.tableData[index]
+      await delPersonnel(this.formData.id)
+      this.getPersonnel()
     },
   },
 }
@@ -240,6 +304,7 @@ export default {
     width: 60px;
     height: 30px;
     background-color: rgb(206, 206, 206);
+    border: 0px;
     line-height: 30px;
     text-align: center;
     margin-left: 20px;
