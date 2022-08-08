@@ -67,6 +67,8 @@ service.interceptors.response.use(
       await store.dispatch('logout')
       router.push('/login')
       Message.error('登录过期，请重新登录')
+    } else if (error?.response?.status === 500) {
+      Message.error(error.response.data)
     } else {
       // console.log(error.message)
       Message.error(error.message)

@@ -1,7 +1,9 @@
 <template>
   <div class="operat-page">
-    <searchBar></searchBar>
-    <infoBar></infoBar>
+    <!-- 搜索栏 -->
+    <searchBar @passData="passDataFn"></searchBar>
+    <!-- 表格区域 -->
+    <infoBar :searchCondition="searchCondition"></infoBar>
   </div>
 </template>
 
@@ -15,12 +17,19 @@ export default {
     infoBar,
   },
   data() {
-    return {}
+    return {
+      searchCondition: {},
+    }
   },
 
   created() {},
 
-  methods: {},
+  methods: {
+    passDataFn(data) {
+      // 传递搜索条件
+      this.searchCondition = {...data}
+    },
+  },
 }
 </script>
 

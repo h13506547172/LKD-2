@@ -1,6 +1,6 @@
 export const imgError = {
   inserted(el, binding) {
-    console.log(el.src)
+    // console.log(el.src)
     if (el.src === '') {
       el.src = 'https://img01.yzcdn.cn/vant/cat.jpeg'
     }
