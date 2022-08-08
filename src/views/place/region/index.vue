@@ -160,12 +160,15 @@ export default {
   methods: {
     //清空搜索栏触发刷新
     clearFn() {
+      this.indexOne = 0
       this.getPlaceList()
     },
 
     //点击新建按钮
     addCreate() {
-      if (this.$refs.form !== undefined) this.$refs.form.resetFields()
+      if (this.$refs.form !== undefined) {
+        this.$refs.form.resetFields()
+      }
 
       this.addTitle = '新增区域'
       this.myForm.regionName = ''
@@ -193,6 +196,9 @@ export default {
       try {
         await delPlaceApi(val.id)
         this.$message.success('删除成功~')
+        this.pageIndex = 1
+        this.pageSize = 10
+        this.indexOne = 0
         this.getPlaceList()
       } catch (error) {}
     },
@@ -202,6 +208,7 @@ export default {
       this.searchInput = this.searchInput.trim()
       this.pageIndex = 1
       this.pageSize = 10
+      this.indexOne = 0
       this.loadPageFn()
     },
     //根据传来的页码刷新数据
@@ -261,6 +268,9 @@ export default {
         if (this.addTitle == '新增区域') {
           await addPlaceListApi(send)
           this.$message.success('添加成功~')
+          this.pageSize = 10
+          this.pageIndex = 1
+          this.indexOne = 0
           this.getPlaceList()
         } else {
           const res = await editPlaceInfoApi(this.editcontent.id, send)

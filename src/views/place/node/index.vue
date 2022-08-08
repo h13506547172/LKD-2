@@ -310,6 +310,9 @@ export default {
 
     //点击新建按钮
     async addCreate() {
+      if (this.$refs.form !== undefined) {
+        this.$refs.form.resetFields()
+      }
       //获取商圈类型
       const { data } = await getBusinessTypeApi()
       this.businessTypeList = data
@@ -318,9 +321,7 @@ export default {
         data: { currentPageRecords },
       } = await getPartnerListApi()
       this.partnerList = currentPageRecords
-      if (this.$refs.form !== undefined) {
-        this.$refs.form.resetFields()
-      }
+
       this.addTitle = '新增点位'
       this.createVisible = true
     },
@@ -343,14 +344,22 @@ export default {
       const addrR = val.addr.substring(val.addr.lastIndexOf('-') + 1)
       this.myForm.addrInfo = addrR
       this.myForm.addr = val.addr.substring(0, val.addr.lastIndexOf('-'))
-      /*  let addrDeep = val.addr.substring(0, val.addr.lastIndexOf('-'))
-      addrDeep = addrDeep.split('-')
-      let myRes = []
-      addrDeep.forEach((item) => {
-        myRes.push({ name: item, code: '1' })
-      })
-      console.log(JSON.stringify(myRes))
-      this.$refs.wladdress.cascader_val = JSON.stringify(myRes) */
+      /*    let addrDeep = val.addr.substring(0, val.addr.lastIndexOf('-'))
+      addrDeep = addrDeep.split('-') */
+      /*  console.log(addrDeep)
+      this.address_data = JSON.stringify(addrDeep) */
+      /*   this.$nextTick(() => {
+        this.address_data = addrDeep
+      }) */
+
+      /*     let myRes = []
+      addrDeep.forEach((item, index) => {
+        myRes.push({ name: item, code: `${index}` })
+      }) */
+      // console.log(JSON.stringify(myRes))
+      // this.$refs.wladdress.cascader_val = JSON.stringify(myRes)
+      /*  this.address_data = JSON.stringify(myRes)
+      console.log(JSON.stringify(myRes)) */
       // this.$refs.wladdress.cascader_val = [name:]
       //获取商圈类型
       const { data } = await getBusinessTypeApi()
@@ -368,7 +377,10 @@ export default {
       try {
         await delNodeApi(val.id)
         this.$message.success('删除成功~')
-        this.loadPageFn()
+        this.pageIndex = 1
+        this.pageSize = 10
+        this.indexOne = 0
+        this.getNodeList()
       } catch (error) {}
     },
 
@@ -377,6 +389,7 @@ export default {
       this.searchInput = this.searchInput.trim()
       this.pageIndex = 1
       this.pageSize = 10
+      this.indexOne = 0
       this.loadPageFn()
     },
     //根据传来的页码刷新数据
@@ -454,6 +467,9 @@ export default {
           }
           await addNodeApi(send)
           this.$message.success('添加成功~')
+          this.pageSize = 10
+          this.pageIndex = 1
+          this.indexOne = 0
           this.getNodeList()
         } else {
           const send = {
