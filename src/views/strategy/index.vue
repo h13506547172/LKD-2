@@ -22,34 +22,31 @@
       <div class="result">
         <div class="operation">
           <!-- 按钮 -->
-          <repeatButton
-            type="success"
-            size="large"
-            @layclick="dialogVisible = true"
-          >
+          <repeatButton type="success" size="large" @layclick="createFn">
             <span class="el-icon-search"></span>
             新建</repeatButton
           >
           <!-- 弹框 S-->
           <el-dialog
-            title="新增策略"
+            :title="titleName"
             :visible="dialogVisible"
             :before-close="handleClose"
             style="width:630px height:484px"
             class="dialogVisible"
           >
-            <!-- form -->
+            <!-- form    :rules="formRules"-->
             <el-form ref="form" :model="form" label-width="80px" class="dialog">
-              <el-form-item label="策略名称">
+              <el-form-item label="策略名称" prop="name">
                 <el-input v-model="strategyForm.name" placeholder="请输入">
                 </el-input>
               </el-form-item>
-              <el-form-item label="策略方案">
-                <el-input
+              <el-form-item label="策略方案" style="position: relative">
+                <el-input-number
                   v-model="strategyForm.methods"
+                  controls-position="right"
+                  style="width: 400px"
                   placeholder="请输入"
-                  style="text-align: center"
-                ></el-input>
+                ></el-input-number>
               </el-form-item>
             </el-form>
             <!-- footer -->
@@ -65,11 +62,7 @@
                   @layclick="dialogVisible = false"
                   >取消</repeatButton
                 >
-                <repeatButton
-                  type="success"
-                  size="large"
-                  @layclick="dialogVisible = false"
-                >
+                <repeatButton type="success" size="large" @layclick="onSaveFn">
                   确定</repeatButton
                 >
               </span>
@@ -103,7 +96,28 @@
             </template>
           </el-table-column>
         </TaskList>
-
+        <div class="pagination-container">
+          <el-row type="flex">
+            <el-col>
+              <div>
+                共
+                <span> {{ results.totalCount }}</span>
+                条记录 第<span>{{ pageIndex }}/{{ results.totalPage }}</span
+                >页
+              </div></el-col
+            >
+            <el-col style="width: 340px">
+              <el-button
+                @click="prePage"
+                style="background: #edf0f9; color: #d8dde3"
+                >上一页</el-button
+              >
+              <el-button @click="nextPage" style="background: #d5ddf8"
+                >下一页</el-button
+              >
+            </el-col>
+          </el-row>
+        </div>
         <el-dialog
           title="策略详情"
           :visible.sync="detailvisible"
@@ -130,8 +144,9 @@
               <el-col>
                 <div>
                   共
-                  <span> {{ results.totalCount }}</span>
-                  条记录 第<span>{{ pageIndex }}/{{ results.totalPage }}</span
+                  <span> {{ detailResults.totalCount }}</span>
+                  条记录 第<span
+                    >{{ pageIndex }}/{{ detailResults.totalPage }}</span
                   >页
                 </div></el-col
               >
@@ -163,6 +178,8 @@ import {
   getStrategySearch,
   deleteStrategy,
   detailStrategy,
+  newStrategy,
+  reviseStrategy,
 } from '@/api/strategy'
 import repeatButton from '@/components/repeatButton/index.vue'
 
@@ -186,6 +203,10 @@ export default {
       detailName: '',
       currentId: '',
       strategyForm: { name: '', methods: '' },
+      titleName: '策略名称',
+      policyId: '',
+      listpageIndex: 1,
+      detailResults: [],
     }
   },
   components: {
@@ -216,13 +237,31 @@ export default {
       // // pageIndex
       // pageSize
       const res = await getStrategyList({
-        pageIndex: this.pageIndex,
+        pageIndex: this.listpageIndex,
         pageSize: 10,
       })
       console.log(res)
       this.tableData = res.data.currentPageRecords
       this.results = res.data
-      this.pageIndex = this.results.pageIndex
+      this.listpageIndex = this.results.pageIndex
+    },
+    // 上一页
+    async prePage() {
+      this.listpageIndex--
+      if (this.pageIndex < 1) return
+      const res = await getStrategyList({
+        pageIndex: this.listpageIndex,
+        pageSize: 10,
+      })
+      this.tableData = res.data.currentPageRecords
+    },
+    async nextPage() {
+      this.listpageIndex++
+      const res = await getStrategyList({
+        pageIndex: this.listpageIndex,
+        pageSize: 10,
+      })
+      this.tableData = res.data.currentPageRecords
     },
     //搜索功能
     async goodSearchFn() {
@@ -258,8 +297,10 @@ export default {
       this.currentId = val.policyId
       console.log(this.currentId)
       try {
-        const res = await detailStrategy(val.policyId, this.pageIndex, 10)
+        const res = await detailStrategy(this.currentId, this.pageIndex, 10)
         this.detailStrategyList = res.data.currentPageRecords
+        this.detailResults = res.data
+        this.pageIndex = this.detailResults.pageIndex
         // console.log(this.detailStrategyList) //1\序号  2、innerCode  3、 nodeName
       } catch (e) {}
     },
@@ -269,10 +310,7 @@ export default {
       console.log(this.currentId) //当前的id
       this.pageIndex--
       if (this.pageIndex < 1) return
-      const res = await detailStrategy(this.currentId, {
-        pageIndex: this.pageIndex,
-        pageSize: 10,
-      })
+      const res = await detailStrategy(this.currentId, this.pageIndex, 10)
       this.detailStrategyList = res.data.currentPageRecords
     },
     //下一页 // 分页
@@ -283,8 +321,42 @@ export default {
       console.log(res)
       this.detailStrategyList = res.data.currentPageRecords
     },
-    // 新建
-    // 修改
+    //点击 新建
+    async createFn() {
+      this.dialogVisible = true
+      this.titleName = '新增策略'
+    },
+
+    //点击 修改
+    async reviseFn(val) {
+      this.titleName = '修改策略'
+      this.dialogVisible = true
+      console.log(val)
+      // 回显数据
+      this.strategyForm.name = val.policyName
+      this.strategyForm.methods = val.discount
+      this.policyId = val.policyId
+    },
+    // onsave
+    async onSaveFn() {
+      if (this.titleName === '新增策略') {
+        const res = await newStrategy(
+          this.strategyForm.name,
+          this.strategyForm.methods,
+        )
+        console.log(res)
+        this.getStrategyList()
+      } else {
+        const res = await reviseStrategy(
+          this.policyId,
+          this.strategyForm.name,
+          this.strategyForm.methods,
+        )
+        this.getStrategyList()
+        console.log(res)
+      }
+      this.dialogVisible = false
+    },
   },
 }
 </script>
@@ -327,6 +399,24 @@ export default {
   }
   .el-dialog .el-dialog__body .el-form-item .el-form-item__content {
     width: 396px;
+  }
+  .arrow-up {
+    position: absolute;
+    right: 13px;
+    top: 0;
+    background-color: #eee;
+    width: 25px;
+    height: 15px;
+    text-align: center;
+  }
+  .arrow-down {
+    position: absolute;
+    right: 13px;
+    top: 24px;
+    background-color: #eee;
+    width: 25px;
+    height: 15px;
+    text-align: center;
   }
 }
 </style>
