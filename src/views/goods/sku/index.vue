@@ -48,7 +48,7 @@
             <!-- upload -->
             <el-upload
               class="upload-demo"
-              action="http://likede2-admin.itheima.net/likede/api/vm-service/sku/upload"
+              action="https://jsonplaceholder.typicode.com/posts/"
               :file-list="fileExelList"
               accept=".xls,.xlsx"
               :on-success="successFileExel"
@@ -210,45 +210,21 @@
               }"
             >
               <el-upload
-                action="#"
-                list-type="picture-card"
-                :auto-upload="false"
+                class="avatar-uploader"
+                action="https://jsonplaceholder.typicode.com/posts/"
+                :show-file-list="false"
                 :on-success="handleAvatarSuccess"
+                :before-upload="beforeAvatarUpload"
+                accept="image/jpg,image/jpeg,image/png"
               >
-                <i slot="default" class="el-icon-plus"></i>
-                <div slot="file" slot-scope="{ file }">
-                  <img
-                    class="el-upload-list__item-thumbnail"
-                    :src="file.url"
-                    alt=""
-                  />
-                  <span class="el-upload-list__item-actions">
-                    <span
-                      class="el-upload-list__item-preview"
-                      @click="handlePictureCardPreview(file)"
-                    >
-                      <i class="el-icon-zoom-in"></i>
-                    </span>
-                    <span
-                      v-if="!disabled"
-                      class="el-upload-list__item-delete"
-                      @click="handleDownload(file)"
-                    >
-                      <i class="el-icon-download"></i>
-                    </span>
-                    <span
-                      v-if="!disabled"
-                      class="el-upload-list__item-delete"
-                      @click="handleRemove(file)"
-                    >
-                      <i class="el-icon-delete"></i>
-                    </span>
-                  </span>
-                </div>
+                <img
+                  v-if="reviseGoodsForm.skuImage"
+                  :src="reviseGoodsForm.skuImage"
+                  class="avatar"
+                  ref="img"
+                />
+                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
               </el-upload>
-              <el-dialog :visible.sync="dialogImageUrl">
-                <img width="100%" :src="reviseGoodsForm.skuImage" alt="" />
-              </el-dialog>
             </el-form-item>
           </el-form>
           <!-- 底部 -->
@@ -310,8 +286,11 @@ import {
   setCreate,
   getTypeSearch,
   transfromData,
+  reviseData,
+  uploadImage,
 } from '@/api/sku'
 import repeatButton from '@/components/repeatButton/index.vue'
+import { getUserInfoAPI } from '@/api/user'
 
 export default {
   name: 'goodsManager',
@@ -346,15 +325,17 @@ export default {
         unit: '',
         brandName: '',
       },
+
       //  类型数据
       TypeSearchList: [],
       titleType: '新增商品',
       // 图片
+      imageUrl: '',
       dialogImageUrl: false,
-
       disabled: false,
       // 文件上传
       fileExelList: [],
+      scopeRowSkuId: '',
     }
   },
   components: {
@@ -384,23 +365,7 @@ export default {
       console.log(response, file, fileList)
     },
     // 处理图片
-    handleRemove(file) {
-      console.log(file)
-      this.reviseGoodsForm.skuImage = file.url
-    },
-    handlePictureCardPreview(file) {
-      this.reviseGoodsForm.skuImage = file.url
-      this.dialogVisible = true
-      // URL.createObjectURL(file.raw)
-    },
-    handleDownload(file) {
-      console.log(file)
-      this.reviseGoodsForm.skuImage = file.url
-    },
-    handleAvatarSuccess(res, file) {
-      this.reviseGoodsForm.skuImage = URL.createObjectURL(file.raw)
-      console.log(this.reviseGoodsForm)
-    },
+
     // // 获取列表
     async getSkuSearchList() {
       const res = await getSkuSearchList()
@@ -440,12 +405,22 @@ export default {
       this.GoodsDialog = true
       this.titleType = '新增商品'
     },
-    // 新建---内部点击确定
+    // 新建---内部点击--确定按钮
     async create() {
       this.GoodsDialog = false
       console.log(this.reviseGoodsForm)
-      if (this.titleType === '新增商品') {
+      if (!this.scopeRowSkuId) {
         await setCreate(this.reviseGoodsForm)
+
+        console.log(this.reviseGoodsForm)
+        this.getSkuSearchList()
+      } else {
+        // console.log(this.scopeRowSkuId)
+        // console.log(this.reviseGoodsForm.skuImage)
+        this.reviseGoodsForm.skuId = this.scopeRowSkuId
+
+        const res = await reviseData(this.scopeRowSkuId, this.reviseGoodsForm)
+        console.log(res)
         this.getSkuSearchList()
       }
       // 初始化数据
@@ -462,7 +437,7 @@ export default {
     reviseFn(scopeRow) {
       this.GoodsDialog = true
       this.titleType = '修改商品'
-      // console.log(scopeRow)
+      console.log(scopeRow)
       this.reviseGoodsForm = {
         skuName: scopeRow.skuName,
         skuImage: scopeRow.skuImage,
@@ -472,6 +447,7 @@ export default {
         brandName: scopeRow.brandName,
         // 图片
       }
+      this.scopeRowSkuId = scopeRow.skuId
     },
     // 上传文件---内部点击确定
     async transformFn() {
@@ -479,6 +455,34 @@ export default {
       // 内部需要一个文件名
       await transfromData()
       // console.log(res)
+    },
+
+    // 图片
+    async handleAvatarSuccess(res, file) {
+      this.reviseGoodsForm.skuImage = URL.createObjectURL(file.raw)
+      // console.log(this.imageUrl)
+      // this.reviseGoodsForm.skuImage = this.imageUrl
+      // console.log(this.reviseGoodsForm)
+      // 方法2
+      //  async handleAvatarSuccess(file)
+      // var formData = new FormData()
+      // formData.append('fileName', file.file)
+      // console.log(formData)
+      // const results = await uploadImage(formData)
+      // console.log(results)
+    },
+
+    beforeAvatarUpload(file) {
+      const isJPG = file.type === 'image/jpeg'
+      const isLt2M = file.size / 1024 / 1024 < 2
+
+      if (!isJPG) {
+        this.$message.error('上传头像图片只能是 JPG 格式!')
+      }
+      if (!isLt2M) {
+        this.$message.error('上传头像图片大小不能超过 2MB!')
+      }
+      return isJPG && isLt2M
     },
   },
 }
@@ -527,5 +531,31 @@ export default {
 .skuImage {
   width: 50px;
   height: 50px;
+}
+
+// 上传图片
+
+.avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.avatar-uploader .el-upload:hover {
+  border-color: #409eff;
+}
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  line-height: 178px;
+  text-align: center;
+}
+.avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
 }
 </style>
