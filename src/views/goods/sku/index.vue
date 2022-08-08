@@ -48,7 +48,7 @@
             <!-- upload -->
             <el-upload
               class="upload-demo"
-              action=""
+              action="https://jsonplaceholder.typicode.com/posts/"
               :file-list="fileExelList"
               accept=".xls,.xlsx"
               :on-success="successFileExel"
@@ -215,8 +215,14 @@
                 :show-file-list="false"
                 :on-success="handleAvatarSuccess"
                 :before-upload="beforeAvatarUpload"
+                accept="image/jpg,image/jpeg,image/png"
               >
-                <img v-if="imageUrl" :src="imageUrl" class="avatar" />
+                <img
+                  v-if="reviseGoodsForm.skuImage"
+                  :src="reviseGoodsForm.skuImage"
+                  class="avatar"
+                  ref="img"
+                />
                 <i v-else class="el-icon-plus avatar-uploader-icon"></i>
               </el-upload>
             </el-form-item>
@@ -405,13 +411,16 @@ export default {
       console.log(this.reviseGoodsForm)
       if (!this.scopeRowSkuId) {
         await setCreate(this.reviseGoodsForm)
+
+        console.log(this.reviseGoodsForm)
         this.getSkuSearchList()
       } else {
-        console.log(this.scopeRowSkuId)
-
+        // console.log(this.scopeRowSkuId)
+        // console.log(this.reviseGoodsForm.skuImage)
         this.reviseGoodsForm.skuId = this.scopeRowSkuId
-        console.log(this.reviseGoodsForm)
-        await reviseData(this.scopeRowSkuId, this.reviseGoodsForm)
+
+        const res = await reviseData(this.scopeRowSkuId, this.reviseGoodsForm)
+        console.log(res)
         this.getSkuSearchList()
       }
       // 初始化数据
@@ -439,6 +448,7 @@ export default {
         // 图片
       }
       this.scopeRowSkuId = scopeRow.skuId
+      this.$refs.img.src = scopeRow.skuImage
     },
     // 上传文件---内部点击确定
     async transformFn() {
@@ -448,18 +458,21 @@ export default {
       // console.log(res)
     },
 
+    // 图片
     async handleAvatarSuccess(res, file) {
-      // console.log(res)
-      console.log(file)
-      this.imageUrl = URL.createObjectURL(file.raw)
-      console.log(this.imageUrl)
-
-      var formData = new FormData()
-      formData.append('fileName', this.imageUrl)
-      console.log(formData)
-      const results = await uploadImage(formData)
-      console.log(results)
+      this.reviseGoodsForm.skuImage = URL.createObjectURL(file.raw)
+      // console.log(this.imageUrl)
+      // this.reviseGoodsForm.skuImage = this.imageUrl
+      // console.log(this.reviseGoodsForm)
+      // 方法2
+      //  async handleAvatarSuccess(file)
+      // var formData = new FormData()
+      // formData.append('fileName', file.file)
+      // console.log(formData)
+      // const results = await uploadImage(formData)
+      // console.log(results)
     },
+
     beforeAvatarUpload(file) {
       const isJPG = file.type === 'image/jpeg'
       const isLt2M = file.size / 1024 / 1024 < 2

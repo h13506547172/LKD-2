@@ -76,10 +76,10 @@ export function reviseData(skuId, data) {
 
 //上传图片
 
-export function uploadImage(data) {
+export function uploadImage(fileName) {
   return request({
     url: '/vm-service/sku/fileUpload',
     method: 'POST',
-    data: { fileName: data },
+    data: { fileName },
   })
 }
