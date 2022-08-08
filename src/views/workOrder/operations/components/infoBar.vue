@@ -40,14 +40,28 @@
       </el-pagination>
     </div>
     <!-- 新建页面 -->
-    <addPop :addDialogVisible='addDialogVisible' @addShow='addDialogVisible=$event'></addPop>
+    <addPop
+      ref="addPop"
+      :addDialogVisible="addDialogVisible"
+      @addShow="addDialogVisible = $event"
+    ></addPop>
+    <!-- 工单详细页面 -->
+    <operatDetail
+      :operatDetailShow="operatDetailShow"
+      :passTaskStatus="passTaskStatus"
+      :passTaskId="passTaskId"
+      @closeDetail="operatDetailShow = $event"
+      @loadPage="loadPageFn"
+      @createShow="createShowFn"
+    ></operatDetail>
   </div>
 </template>
 
 <script>
 import addButton from '@/components/button/addButton.vue'
 import Vbutton from '@/components/button/Vbutton.vue'
-import addPop from "./addPop.vue";
+import addPop from './addPop.vue'
+import operatDetail from './operatDetail.vue'
 import { getOperationListAPI } from '@/api/operations'
 // 时间处理
 import moment from 'moment'
@@ -61,7 +75,8 @@ export default {
   components: {
     addButton,
     Vbutton,
-    addPop
+    addPop,
+    operatDetail,
   },
   data() {
     return {
@@ -150,6 +165,10 @@ export default {
       // console.log(taskId)
       await this.$refs.addPop.againCreate(taskId)
       this.addDialogVisible = true
+    },
+    // 重新加载页面
+    async loadPageFn() {
+      await this.getOperatList(this.currentPage1)
     },
   },
   watch: {

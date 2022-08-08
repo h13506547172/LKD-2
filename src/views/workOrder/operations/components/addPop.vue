@@ -56,6 +56,7 @@
 
 <script>
 import { getrepairerListAPI } from '@/api/operations'
+import { createOrderAPI, getTaskInfoAPI } from '@/api/operat'
 export default {
   props: {
     addDialogVisible: {
@@ -92,9 +93,28 @@ export default {
       this.$emit('addShow', false)
     },
     // 创建工单
-    createFn() {
-      console.log(11)
+    async createFn() {
+      await this.$refs.addForm.validate()
+      await createOrderAPI(this.addForm)
+      this.closeFn()
+      this.$message.success('新建工单成功')
+      // 将表单重置
+      this.$refs.addForm.resetFields()
+      this.addForm = {
+        userId: this.$store.state.userInfo.userId,
+        createType: 1,
+        innerCode: '', // 设备id
+        productType: '', // 工单类型
+        details: [],
+        assignorId: '', // 工单负责人id
+        desc: '', // 描述信息
+      }
     },
+    // 重新创建
+    async againCreate(taskId){
+      const res = await getTaskInfoAPI(taskId)
+      this.addForm.innerCode = res.data.innerCode
+    }
   },
   watch: {
     // 获取运维人员名单
