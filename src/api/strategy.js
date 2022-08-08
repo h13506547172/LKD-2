@@ -54,4 +54,37 @@ export function detailStrategy(id, pageIndex, pageSize) {
   })
 }
 // 新建
+/**
+ * 新增策略
+ * @param {*} policyName 	策略名
+ * @param {*} discount 折扣值
+ * @returns promise
+ */
+export function newStrategy(policyName, discount) {
+  return request({
+    url: '/vm-service/policy',
+    method: 'post',
+    data: {
+      policyName,
+      discount,
+    },
+  })
+}
 // 修改  /vm-service/policy/:policyId   修改
+/**
+ * 修改策略
+ * @param {*} id
+ * @param {*} policyName 	策略名
+ * @param {*} discount 折扣值
+ * @returns promise
+ */
+export function reviseStrategy(id, policyName, discount) {
+  return request({
+    url: '/vm-service/policy/' + id,
+    method: 'PUT',
+    data: {
+      policyName,
+      discount,
+    },
+  })
+}
