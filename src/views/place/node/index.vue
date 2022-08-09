@@ -165,13 +165,17 @@
           </el-form-item>
 
           <el-form-item label="详细地址：" prop="addrInfo">
-            <wl-address
-              ref="wladdress"
-              class="my-wl-address"
-              :type="address_mode"
-              :address.sync="address_data"
+            <el-cascader
+              placeholder="请选择"
+              v-if="isShowcascader"
+              size="large"
+              :options="options"
+              v-model="selectedOptions"
+              :props="{ label: 'label', value: 'label' }"
+              @change="handleChange"
+              filterable
             >
-            </wl-address>
+            </el-cascader>
             <el-input
               v-model="myForm.addrInfo"
               maxlength="60"
@@ -204,7 +208,7 @@
 
 <script>
 import myBtn from '@/components/myBtn.vue'
-
+import { regionData, CodeToText, TextToCode } from 'element-china-area-data'
 import {
   getNodeListApi,
   getPlaceList,
@@ -231,9 +235,7 @@ export default {
         addrInfo: '', //详细地址
         id: '',
       },
-      //三级地区联级
-      address_mode: 'cascader', // default普通 cascader级联
-      address_data: '', // 选中地址
+
       owner: {}, //合作商选中信息
       partnerList: [], //归属合作商列表
       businessTypeList: [], //所属商圈的列表
@@ -263,18 +265,13 @@ export default {
       },
       nodeList: [], //搜索栏2的下拉菜单
       searchInputRes: '',
+      //三级城市选择
+      options: regionData,
+      selectedOptions: [],
+      isShowcascader: true,
     }
   },
-  watch: {
-    address_data(val) {
-      if (val === '') return
-      const res = JSON.parse(val).map((item) => item.name)
-      if (res[0] === res[1]) {
-        res.shift()
-      }
-      this.myForm.addr = res.join('-')
-    },
-  },
+
   computed: {},
   components: {
     myBtn,
@@ -288,9 +285,24 @@ export default {
   },
 
   methods: {
+    //三级城市选择后的处理
+    handleChange(value) {
+      this.myForm.addr = value.join('-')
+    },
     //关闭窗口
     closeFn() {
-      this.$refs.wladdress.cascader_val = []
+      /*   this.myForm = {
+        name: '', //点位名称
+        regionId: '', //所在区域
+        businessId: '', //所属商圈
+        ownerId: '', //合作商ID
+        ownerName: '', //合作商名字
+        addr: '', //选择器地址
+        addrInfo: '', //详细地址
+        id: '',
+      }*/
+      /* this.selectedOptions = ''
+      this.$refs.form.resetFields() */
     },
     //新增按钮中的归属合作商
     getOwnerIdFn(val) {
@@ -306,9 +318,18 @@ export default {
 
     //点击新建按钮
     async addCreate() {
-      if (this.$refs.form !== undefined) {
-        this.$refs.form.resetFields()
+      this.selectedOptions = ''
+      this.myForm = {
+        name: '', //点位名称
+        regionId: '', //所在区域
+        businessId: '', //所属商圈
+        ownerId: '', //合作商ID
+        ownerName: '', //合作商名字
+        addr: '', //选择器地址
+        addrInfo: '', //详细地址
+        id: '',
       }
+
       //获取商圈类型
       const { data } = await getBusinessTypeApi()
       this.businessTypeList = data
@@ -320,6 +341,9 @@ export default {
 
       this.addTitle = '新增点位'
       this.createVisible = true
+      this.$nextTick(() => {
+        this.$refs.form.clearValidate()
+      })
     },
     //查看详情按钮
     async infoBtnFn(val) {
@@ -329,8 +353,8 @@ export default {
     },
     //修改按钮
     async editBtnFn(val) {
-      if (this.$refs.form !== undefined) this.$refs.form.resetFields()
       //点击修改后状态回显↓
+      this.createVisible = true
       this.myForm.name = val.name
       this.myForm.regionId = val.regionId
       this.myForm.businessId = val.businessType.id
@@ -340,23 +364,9 @@ export default {
       const addrR = val.addr.substring(val.addr.lastIndexOf('-') + 1)
       this.myForm.addrInfo = addrR
       this.myForm.addr = val.addr.substring(0, val.addr.lastIndexOf('-'))
-      /*    let addrDeep = val.addr.substring(0, val.addr.lastIndexOf('-'))
-      addrDeep = addrDeep.split('-') */
-      /*  console.log(addrDeep)
-      this.address_data = JSON.stringify(addrDeep) */
-      /*   this.$nextTick(() => {
-        this.address_data = addrDeep
-      }) */
-
-      /*     let myRes = []
-      addrDeep.forEach((item, index) => {
-        myRes.push({ name: item, code: `${index}` })
-      }) */
-      // console.log(JSON.stringify(myRes))
-      // this.$refs.wladdress.cascader_val = JSON.stringify(myRes)
-      /*  this.address_data = JSON.stringify(myRes)
-      console.log(JSON.stringify(myRes)) */
-      // this.$refs.wladdress.cascader_val = [name:]
+      let r1 = val.addr.substring(0, val.addr.lastIndexOf('-'))
+      r1 = r1.split('-')
+      this.selectedOptions = r1
       //获取商圈类型
       const { data } = await getBusinessTypeApi()
       this.businessTypeList = data
@@ -366,7 +376,6 @@ export default {
       } = await getPartnerListApi()
       this.partnerList = currentPageRecords
       this.addTitle = '修改点位'
-      this.createVisible = true
     },
     //删除按钮
     async delBtnFn(val) {

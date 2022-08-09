@@ -21,7 +21,11 @@
           </template>
         </el-table-column>
         <el-table-column prop="innerCode" label="机器编号"> </el-table-column>
-        <el-table-column prop="vmStatus" label="设备状态"> </el-table-column>
+        <el-table-column prop="vmStatus" label="设备状态">
+          <template v-slot="scope">
+            {{ { 0: '未投放', 1: '运营', 3: '撤机' }[scope.row.vmStatus] }}
+          </template>
+        </el-table-column>
         <el-table-column label="最后一次供货时间">
           <template v-slot="scope">
             {{

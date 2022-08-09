@@ -65,6 +65,7 @@
         :visible.sync="createVisible"
         width="35%"
         class="borderR"
+        @close="closeFn"
       >
         <el-form ref="form" :model="myForm" label-width="100px" :rules="rules">
           <el-form-item label="区域名称：" prop="regionName">
@@ -159,6 +160,7 @@ export default {
   },
 
   methods: {
+    closeFn() {},
     //清空搜索栏触发刷新
     clearFn() {
       this.indexOne = 0
@@ -168,10 +170,6 @@ export default {
 
     //点击新建按钮
     addCreate() {
-      if (this.$refs.form !== undefined) {
-        this.$refs.form.resetFields()
-      }
-
       this.addTitle = '新增区域'
       this.myForm.regionName = ''
       this.myForm.remark = ''
@@ -186,7 +184,6 @@ export default {
     },
     //修改按钮
     editBtnFn(val) {
-      if (this.$refs.form !== undefined) this.$refs.form.resetFields()
       this.editcontent = val
       this.myForm.regionName = val.name
       this.myForm.remark = val.remark

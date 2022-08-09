@@ -74,6 +74,7 @@
         :visible.sync="createVisible"
         width="35%"
         class="borderR"
+        @close="closeFn"
       >
         <el-form ref="form" :model="myForm" label-width="120px" :rules="rules">
           <el-form-item label="合作商名称：" prop="name">
@@ -228,6 +229,17 @@ export default {
   },
 
   methods: {
+    //关闭窗口
+    closeFn() {
+      this.myForm = {
+        name: '', //合作商名称searchInput
+        contact: '', //联系人
+        mobile: '', //联系电话
+        ratio: undefined, //分成比例
+        account: '', //账号
+        password: '', //密码
+      }
+    },
     //清空搜索栏触发刷新
     clearFn() {
       this.indexOne = 0
@@ -237,9 +249,6 @@ export default {
 
     //点击新建按钮
     addCreate() {
-      if (this.$refs.form !== undefined) {
-        this.$refs.form.resetFields()
-      }
       this.addTitle = '新增合作商'
       /*   this.myForm.regionName = ''
       this.myForm.remark = '' */
@@ -271,7 +280,6 @@ export default {
     },
     //修改按钮
     editBtnFn(val) {
-      if (this.$refs.form !== undefined) this.$refs.form.resetFields()
       this.editId = val.id
       this.myForm.name = val.name
       this.myForm.contact = val.contact
