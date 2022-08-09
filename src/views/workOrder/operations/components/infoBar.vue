@@ -130,7 +130,7 @@ export default {
           taskCode: item.taskCode,
           innerCode: item.innerCode,
           // 工单类型
-          taskName: item.taskType.typeName,
+          taskName: item.taskType?item.taskType.typeName:'撤机工单',
           // 工单方式
           createType: this.createType[item.createType],
           // 工单状态
