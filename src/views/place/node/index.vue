@@ -115,8 +115,6 @@
                 v-model="myForm.regionId"
                 filterable
                 placeholder="请选择"
-                clearable
-                @clear="clearFn"
               >
                 <el-option
                   v-for="item in nodeList"
@@ -135,8 +133,6 @@
                 v-model="myForm.businessId"
                 filterable
                 placeholder="请选择"
-                clearable
-                @clear="clearFn"
               >
                 <el-option
                   v-for="item in businessTypeList"
@@ -155,9 +151,7 @@
                 v-model="myForm.ownerId"
                 filterable
                 placeholder="请选择"
-                clearable
                 @change="getOwnerIdFn"
-                @clear="clearFn"
               >
                 <el-option
                   v-for="item in partnerList"
@@ -268,6 +262,7 @@ export default {
         addrInfo: [{ required: true, message: '请输入', trigger: 'blur' }],
       },
       nodeList: [], //搜索栏2的下拉菜单
+      searchInputRes: '',
     }
   },
   watch: {
@@ -304,8 +299,9 @@ export default {
     },
     //清空搜索栏触发刷新
     clearFn() {
-      // this.getNodeList()
-      this.saerchBtn()
+      this.indexOne = 0
+      this.searchInputRes = ''
+      this.getNodeList()
     },
 
     //点击新建按钮
@@ -387,6 +383,8 @@ export default {
     //获取头部的数据并进行筛选处理
     saerchBtn() {
       this.searchInput = this.searchInput.trim()
+      //将搜索框的值给搜索框的维护对象，能够解决bug=>搜索的时候修改输入框会影响跳页结果
+      this.searchInputRes = this.searchInput
       this.pageIndex = 1
       this.pageSize = 10
       this.indexOne = 0
@@ -397,7 +395,7 @@ export default {
       const send = {
         pageIndex: this.pageIndex,
         pageSize: this.pageSize,
-        name: this.searchInput.trim(),
+        name: this.searchInputRes,
         regionId: this.searchInput2,
       }
       try {

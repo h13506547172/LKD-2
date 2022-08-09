@@ -178,7 +178,7 @@ export default {
       infoNumb: '',
       infoRatio: '',
       myForm: {
-        name: '', //合作商名称
+        name: '', //合作商名称searchInput
         contact: '', //联系人
         mobile: '', //联系电话
         ratio: undefined, //分成比例
@@ -218,6 +218,8 @@ export default {
         account: [{ required: true, message: '请输入', trigger: 'blur' }],
         password: [{ required: true, message: '请输入', trigger: 'blur' }],
       },
+      //将搜索框的值给搜索框的维护对象，能够解决bug=>搜索的时候修改输入框会影响跳页结果
+      searchInputRes: '',
     }
   },
 
@@ -229,6 +231,7 @@ export default {
     //清空搜索栏触发刷新
     clearFn() {
       this.indexOne = 0
+      this.searchInputRes = ''
       this.getPlaceList()
     },
 
@@ -294,6 +297,8 @@ export default {
     //获取头部的数据并进行筛选处理
     saerchBtn() {
       this.searchInput = this.searchInput.trim()
+      //将搜索框的值给搜索框的维护对象，能够解决bug=>搜索的时候修改输入框会影响跳页结果
+      this.searchInputRes = this.searchInput
       this.pageIndex = 1
       this.pageSize = 10
       this.indexOne = 0
@@ -304,7 +309,7 @@ export default {
       const send = {
         pageIndex: this.pageIndex,
         pageSize: this.pageSize,
-        name: this.searchInput.trim(),
+        name: this.searchInputRes,
       }
       try {
         const { data } = await getPartnerList(send)
