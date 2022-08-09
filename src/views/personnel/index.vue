@@ -31,8 +31,12 @@
       >
       <!-- 弹层e -->
       <el-dialog title="新增人员" :visible.sync="dialogFormVisible">
-        <el-form :model="formData" ref="form">
-          <el-form-item label="*人员名称" :label-width="formLabelWidth">
+        <el-form :model="formData" :rules="formRules" ref="form">
+          <el-form-item
+            prop="userName"
+            label="*人员名称"
+            :label-width="formLabelWidth"
+          >
             <el-input
               v-model="formData.userName"
               autocomplete="off"
@@ -40,17 +44,25 @@
               show-word-limit
             ></el-input>
           </el-form-item>
-          <el-form-item label="*角色" :label-width="formLabelWidth">
+          <el-form-item
+            prop="roleId"
+            label="*角色"
+            :label-width="formLabelWidth"
+          >
             <el-select
               v-model="formData.roleId"
               style="width: 100%"
               placeholder="请选择角色"
             >
-              <el-option label="运营员" :value="Number(1)"></el-option>
-              <el-option label="维修员" :value="Number(2)"></el-option>
+              <el-option label="运营员" :value="Number(2)"></el-option>
+              <el-option label="维修员" :value="Number(3)"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="*联系电话" :label-width="formLabelWidth">
+          <el-form-item
+            prop="mobile"
+            label="*联系电话"
+            :label-width="formLabelWidth"
+          >
             <el-input
               v-model="formData.mobile"
               autocomplete="off"
@@ -58,7 +70,11 @@
               show-word-limit
             ></el-input>
           </el-form-item>
-          <el-form-item label="*负责区域" :label-width="formLabelWidth">
+          <el-form-item
+            prop="regionId"
+            label="*负责区域"
+            :label-width="formLabelWidth"
+          >
             <el-select
               v-model="formData.regionId"
               style="width: 100%"
@@ -86,7 +102,7 @@
           </el-upload>
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-button @click="dialogFormVisible = false">取 消</el-button>
+          <el-button @click="onClose">取 消</el-button>
           <el-button type="primary" @click="AddOKFn">确 定</el-button>
         </div>
       </el-dialog>
@@ -125,9 +141,19 @@
           共{{ datapage.totalCount }}条数据
           <span>{{ pageIndex }}/{{ datapage.totalPage }}页</span>
         </div>
-          <el-button type="info"  @click="previousFn"  disabled>上一页</el-button>
-        <!-- <button class="butn butn1" @click="previousFn" >上一页</button> -->
-        <button class="butn" @click="nextFn" :disable='falg'>下一页</button>
+        <el-button
+          type="info"
+          class="butn1"
+          @click="previousFn"
+          :disabled="pageIndex == 1 ? true : false"
+          >上一页</el-button
+        >
+        <el-button
+          type="info"
+          @click="nextFn"
+          :disabled="pageIndex == datapage.totalPage ? true : false"
+          >下一页</el-button
+        >
       </div>
     </el-card>
   </div>
@@ -147,23 +173,34 @@ export default {
       tableAddress: [],
       input: '',
       pageIndex: 1,
-      disabled:false,
+      disableds: false,
       datapage: {},
       imageUrl: '',
       dialogTableVisible: true,
       dialogFormVisible: false,
       formData: {
-        image: 'http://likede2-java.itheima.net/image/1659862212695.jpg',
+        image: '',
         mobile: '',
         regionId: '',
         regionName: '',
         roleId: '',
-        status: false,
+        status: true,
         userName: '',
+      },
+      formRules: {
+        userName: [{ required: true, message: '请输入名称', trigger: 'blur' }],
+        roleId: [{ required: true, message: '请选择角色', trigger: 'change' }],
+        mobile: [
+          { required: true, message: '请输入联系电话', trigger: 'blur' },
+        ],
+        regionId: [
+          { required: true, message: '请选择区域', trigger: 'change' },
+        ],
       },
       formLabelWidth: '120px',
     }
   },
+  // change
   created() {
     this.getPersonnel()
   },
@@ -181,67 +218,27 @@ export default {
     },
     // 下一页
     async nextFn() {
-        this.pageIndex++
-      if (this.pageIndex === this.datapage.totalPage){
-        this.disabled = true
-      }
-      // console.log(this.pageIndex)
+      this.pageIndex++
       const res = await getPersonnel(this.pageIndex, 10)
       this.tableData = res.data.currentPageRecords
-      this.pageIndex = res.data.pageIndex
     },
     // 上一页
     async previousFn() {
       this.pageIndex--
-      if (this.pageIndex === 1) return
-      const res = await getPersonnel(this.pageIndex++, 10)
+      const res = await getPersonnel(this.pageIndex, 10)
       this.tableData = res.data.currentPageRecords
     },
     // 查询
     async queryFn() {
       const res = await getPersonnel(1, 10, this.input)
-      //  console.log(res);
       this.tableData = res.data.currentPageRecords
       if (this.input === '') {
         this.getPersonnel()
       }
     },
-    // 新增
-    async newlyaddFn() {
-      this.dialogFormVisible = true
-      const res = await getPersonnel(this.pageIndex, 100000)
-      // console.log(res)
-      this.tableAddress = res.data.currentPageRecords.reduce((cur, next) => {
-        this.tableAddress[next.regionName]
-          ? ''
-          : (this.tableAddress[next.regionName] = true && cur.push(next))
-        return cur
-      }, [])
-      // console.log(this.tableAddress)
-      // this.tableAddress = res.data.currentPageRecords
-    },
-    // 确定
-    async AddOKFn() {
-      this.dialogFormVisible = false
-      await this.$refs.form.validate()
-      if (this.formData.id) {
-        const res = this.tableAddress.filter(
-          (item) => item.regionId === this.formData.regionId,
-        )
-        this.formData.regionName = res[0].regionName
-        await editDeptsApi(this.formData)
-      } else {
-        const res = this.tableAddress.filter(
-          (item) => item.regionId === this.formData.regionId,
-        )
-        this.formData.regionName = res[0].regionName
-        await AddPersonnel(this.formData)
-      }
-    },
     // 上传图片
     handleAvatarSuccess(res, file) {
-      this.imageUrl = URL.createObjectURL(file.raw)
-      this.formData.image = this.imageUrl
+      this.formData.image = URL.createObjectURL(file.raw)
     },
     beforeAvatarUpload(file) {
       const isJPG = file.type === 'image/jpeg'
@@ -254,6 +251,48 @@ export default {
         this.$message.error('上传头像图片大小不能超过 2MB!')
       }
       return isJPG && isLt2M
+    },
+    // 新增
+    async newlyaddFn() {
+      this.dialogFormVisible = true
+      const res = await getPersonnel(this.pageIndex, 100000)
+      // console.log(res)
+      this.tableAddress = res.data.currentPageRecords.reduce((cur, next) => {
+        this.tableAddress[next.regionName]
+          ? ''
+          : (this.tableAddress[next.regionName] = true && cur.push(next))
+        return cur
+      }, [])
+    },
+      // 关闭弹窗
+    async onClose() {
+      this.dialogFormVisible = false
+      await this.$refs.form.resetFields()
+      this.formData = {
+        image: '',
+        mobile: '',
+        regionId: '',
+        regionName: '',
+        roleId: '',
+        status: true,
+        userName: '',
+      }
+    },
+    // 确定
+    async AddOKFn() {
+      await this.$refs.form.validate()
+      const res = this.tableAddress.filter(
+        (item) => item.regionId === this.formData.regionId,
+      )
+      this.formData.regionName = res[0].regionName
+      if (this.formData.id) {
+        await editDeptsApi(this.formData)
+        this.onClose()
+      } else {
+        await AddPersonnel(this.formData)
+        this.onClose()
+      }
+      this.getPersonnel()
     },
     // 修改
     async modifyFn(index) {
@@ -296,6 +335,7 @@ export default {
 .box-card {
   margin-right: 20px;
 }
+// 页码
 .Page {
   display: flex;
   align-items: center;
@@ -309,9 +349,9 @@ export default {
     text-align: center;
     margin-left: 20px;
   }
-  // .butn1 {
-  //   margin-left: 1170px;
-  // }
+    .butn1 {
+    margin-left: 1000px;
+  }
 }
 // 上传
 .avatar-uploader .el-upload {
