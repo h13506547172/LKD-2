@@ -143,11 +143,11 @@ export default {
     },
     async prevClickFn(page) {
       this.currentPage1 = page
-      await this.getOperatList(page)
+      await this.getOperatList(page,this.searchCondition.taskCode,this.searchCondition.status)
     },
     async nextClickFn(page) {
       this.currentPage1 = page
-      await this.getOperatList(page)
+      await this.getOperatList(page,this.searchCondition.taskCode,this.searchCondition.status)
     },
     // 显示新增弹出层
     addPopShow() {
