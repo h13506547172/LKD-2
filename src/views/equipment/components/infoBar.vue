@@ -19,9 +19,23 @@
       <el-table-column prop="ownerName" label="合租商"> </el-table-column>
       <el-table-column prop="vmStatus" label="设备状态"> </el-table-column>
       <el-table-column label="操作" width="150">
-        <a href="javascript:;" class="blue">货道 </a>
-        <a href="javascript:;" class="blue">策略 </a>
-        <a href="javascript:;" class="blue">修改</a>
+        <template #default="scope">
+          <a
+            href="javascript:;"
+            class="blue"
+            @click="openChannelConfig(scope.$index)"
+            >货道
+          </a>
+          <a href="javascript:;" @click="getVmPolicy(scope.$index)" class="blue"
+            >策略
+          </a>
+          <a
+            href="javascript:;"
+            class="blue"
+            @click="showChangeData(scope.$index)"
+            >修改</a
+          >
+        </template>
       </el-table-column>
     </el-table>
     <!-- 分页区域 -->
@@ -39,9 +53,9 @@
       >
       </el-pagination>
     </div>
-    <!-- 弹出层批量操作 -->
+    <!-- 弹出层批量操作  -->
     <el-dialog
-      title="批量操作"
+      :title="!curData.innerCode ? '批量操作' : '策略管理'"
       :visible.sync="batchShow"
       width="40%"
       :before-close="closeBatchFn"
@@ -76,32 +90,142 @@
           <div>系统自动生成</div>
         </el-form-item>
         <el-form-item label="选择型号">
-          <el-select placeholder="请选择">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
+          <el-select v-model="addEquipmentForm.vmType" placeholder="请选择">
+            <el-option
+              v-for="item in vmTypeList"
+              :key="item.typeId"
+              :label="item.name"
+              :value="item.typeId"
+            ></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="选择点位">
-          <el-select placeholder="请选择">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
+          <el-select v-model="addEquipmentForm.nodeId" placeholder="请选择">
+            <el-option
+              v-for="item in nodeList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            ></el-option>
           </el-select>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="closeAddDialog">取 消</el-button>
-        <el-button type="primary" @click="addDialogShow = false"
-          >确 定</el-button
+        <el-button type="primary" @click="addVmFn">确 定</el-button>
+      </span>
+    </el-dialog>
+    <!-- 弹出层策略管理 -->
+    <el-dialog
+      title="策略管理"
+      :visible.sync="strategicShow"
+      width="40%"
+      :before-close="closeStrategicShow"
+    >
+      <el-form ref="form" label-width="80px">
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="机器编号">
+              <div>{{ curData.innerCode }}</div>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="策略名称">
+              <div>{{ curData.policyName }}</div>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="策略方案">
+              <div>1%</div>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="cancelStrategic(curData.innerCode, curData.policyId)"
+          >取消策略</el-button
         >
       </span>
     </el-dialog>
+    <!-- 弹出层修改设备 -->
+    <el-dialog
+      title="修改设备"
+      :visible.sync="changeDataShow"
+      width="40%"
+      :before-close="closeChangeDataShow"
+    >
+      <el-form ref="form" label-width="80px">
+        <el-form-item label="机器编号">
+          <div>{{ VmInfoForm.innerCode }}</div>
+        </el-form-item>
+        <el-form-item label="供货时间">
+          <div>{{ VmInfoForm.updateTime }}</div>
+        </el-form-item>
+        <el-form-item label="设备类型">
+          <div>{{ VmInfoForm.type ? VmInfoForm.type.name : '' }}</div>
+        </el-form-item>
+        <el-form-item label="设备容量">
+          <div>
+            {{ VmInfoForm.type ? VmInfoForm.type.channelMaxCapacity : 'xx' }}
+          </div>
+        </el-form-item>
+        <el-form-item label="设备点位">
+          <el-select v-model="curNode" placeholder="请选择活动区域">
+            <el-option
+              v-for="item in VmInfoForm.nodeList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="合作商">
+          <div>{{ VmInfoForm.ownerName }}</div>
+        </el-form-item>
+        <el-form-item label="所属区域">
+          <div>{{ VmInfoForm.region ? VmInfoForm.region.name : 'xx' }}</div>
+        </el-form-item>
+        <el-form-item label="设备地址">
+          <div>{{ VmInfoForm.node ? VmInfoForm.node.name : '' }}</div>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="closeChangeDataShow">取 消</el-button>
+        <el-button type="primary" @click="changeNodeFn">确 定</el-button>
+      </span>
+    </el-dialog>
+    <!-- 货道设置 -->
+    <channelConfig
+      :channelConfigShow="channelConfigShow"
+      @closeChannel="channelConfigShow = $event"
+      :vmTypeInfo="vmTypeInfo"
+      :ChannelList="ChannelList"
+      :VmInfoForm="VmInfoForm"
+      @delGoods="delGoodsFn"
+      @update="updateFn"
+      ref="child"
+    ></channelConfig>
   </div>
 </template>
 
 <script>
 import addButton from '@/components/button/addButton.vue'
 import Vbutton from '@/components/button/Vbutton.vue'
-import { applyPolicyAPI, getpolicyListAPI, getVMListAPI } from '@/api/equipment'
+import channelConfig from './channelConfig.vue'
+import {
+  addVmAPI,
+  applyPolicyAPI,
+  cancelPolicyAPI,
+  changeNodeAPI,
+  getChannelListAPI,
+  getNodeListAPI,
+  getpolicyListAPI,
+  getVMListAPI,
+  getVmPolicyAPI,
+  getVmTypeInfoAPI,
+  getVmTypeListAPI,
+  nodeSearchAPI,
+} from '@/api/equipment'
 export default {
   props: {
     innerCode: {
@@ -111,6 +235,7 @@ export default {
   components: {
     addButton,
     Vbutton,
+    channelConfig,
   },
   data() {
     return {
@@ -131,9 +256,30 @@ export default {
       // 策略列表
       strategyForm: [],
       currentStrategy: '',
+      // 选中的设备策略信息
+      curData: {},
+      curInnerCode: '',
       // 新增设备
       addDialogShow: false,
-      addEquipmentForm: {},
+      addEquipmentForm: {
+        createUserId: this.$store.state.userInfo.userId,
+        nodeId: '',
+        vmType: '',
+      },
+      // 设备类型列表
+      vmTypeList: [],
+      nodeList: [],
+      // 策略管理弹出层
+      strategicShow: false,
+      // 修改设备
+      changeDataShow: false,
+      VmInfoForm: {},
+      curNode: '',
+      // 货道配置
+      channelConfigShow: false,
+      vmTypeInfo: {},
+      // 货道商品列表
+      ChannelList: [],
     }
   },
 
@@ -170,7 +316,7 @@ export default {
     },
     // 获取策略列表
     async getpolicyList() {
-      if (this.selectList.length > 0) {
+      if (this.selectList.length > 0 || !this.curData.innerCode) {
         const res = await getpolicyListAPI()
         // console.log(res)
         this.strategyForm = res.data
@@ -187,15 +333,22 @@ export default {
     async confirmStrategyFn() {
       // console.log(this.currentStrategy)
       let innerCodeList = []
-      this.selectList.forEach((item) => {
-        innerCodeList.push(item.innerCode)
-      })
+      // 如果选中某个策略
+      if (!this.curData.innerCode) {
+        innerCodeList.push(this.curInnerCode)
+      } else {
+        this.selectList.forEach((item) => {
+          innerCodeList.push(item.innerCode)
+        })
+      }
       // 发送请求更改策略并更新数据
       await applyPolicyAPI({
         innerCodeList: innerCodeList,
         policyId: this.currentStrategy,
       })
       this.batchShow = false
+      this.curData = {}
+      this.curInnerCode = ''
       await getVMList(this.currentPage)
     },
     // 关闭新增设备对话框
@@ -203,8 +356,88 @@ export default {
       this.addDialogShow = false
     },
     // 新增设备
-    addFn() {
+    async addFn() {
+      const res = await getNodeListAPI()
+      const res2 = await getVmTypeListAPI()
+      this.vmTypeList = res2.data.currentPageRecords
+      this.nodeList = res.data.currentPageRecords
       this.addDialogShow = true
+    },
+    async addVmFn() {
+      await addVmAPI(this.addEquipmentForm)
+      this.addDialogShow = false
+      await this.getVMList(this.currentPage)
+    },
+    // 获取商品策略
+    async getVmPolicy(index) {
+      const res = await getVmPolicyAPI(this.tableData[index].innerCode)
+      this.curInnerCode = this.tableData[index].innerCode
+      this.curData = res.data
+      console.log(this.curData)
+      // 如果策略不存在就添加策略，策略存在就显示策略
+      if (!this.curData.innerCode) {
+        this.getpolicyList()
+      } else {
+        this.strategicShow = true
+      }
+    },
+    // 策略管理
+    closeStrategicShow() {
+      // 关闭
+      this.strategicShow = false
+    },
+    // 取消策略
+    async cancelStrategic(innerCode, policyId) {
+      await cancelPolicyAPI(innerCode, policyId)
+      this.strategicShow = false
+      await this.getVMList(this.currentPage)
+    },
+    // 关闭设备修改
+    closeChangeDataShow() {
+      this.changeDataShow = false
+    },
+    // 显示设备修改
+    async showChangeData(index) {
+      this.VmInfoForm = this.tableData[index]
+      // console.log(this.VmInfoForm)
+      const res = await nodeSearchAPI()
+      // console.log(res);
+      this.VmInfoForm.nodeList = res.data.currentPageRecords
+      this.changeDataShow = true
+    },
+    async changeNodeFn() {
+      await changeNodeAPI(this.VmInfoForm.id, this.curNode)
+      this.changeDataShow = false
+      await this.getVMList(this.currentPage)
+    },
+    // 打开货道配置
+    async openChannelConfig(index) {
+      // 获得售货机详情
+      this.VmInfoForm = this.tableData[index]
+      // console.log(this.VmInfoForm)
+      const res = await getVmTypeInfoAPI(this.VmInfoForm.type.typeId)
+      // console.log(res)
+      this.vmTypeInfo = res.data
+      const res2 = await getChannelListAPI(this.VmInfoForm.innerCode)
+      this.ChannelList = res2.data
+      // console.log(this.ChannelList)
+      this.channelConfigShow = true
+    },
+    // 删除商品
+    delGoodsFn(channelCode) {
+      const index = this.ChannelList.findIndex((item) => {
+        return item.channelCode == channelCode
+      })
+      this.ChannelList[index].sku = {}
+    },
+    updateFn(curSku) {
+      // console.log(curSku)
+      // const index = this.ChannelList.findIndex((item) => {
+      //   return item.skuId === curSku.skuId
+      // })
+      // console.log(curSku)
+      // this.ChannelList[index].sku = curSku
+      // console.log(this.ChannelList)
     },
   },
   watch: {
