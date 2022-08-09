@@ -54,8 +54,8 @@
               style="width: 100%"
               placeholder="请选择角色"
             >
-              <el-option label="运营员" :value="Number(1)"></el-option>
-              <el-option label="维修员" :value="Number(2)"></el-option>
+              <el-option label="运营员" :value="Number(2)"></el-option>
+              <el-option label="维修员" :value="Number(3)"></el-option>
             </el-select>
           </el-form-item>
           <el-form-item
