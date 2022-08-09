@@ -3,9 +3,17 @@
     <div class="app-container">
       <!-- 商品搜索 -->
       <div class="search">
-        <el-form :inline="true" :model="form" class="demo-form-inline">
-          <el-form-item label="商品搜索">
-            <el-input v-model.trim="form.searchName"></el-input>
+        <el-form
+          :inline="true"
+          :model="form"
+          class="demo-form-inline demo-form"
+        >
+          <el-form-item label="商品搜索:">
+            <el-input
+              v-model.trim="form.searchName"
+              @keydown.enter="goodSearchFn"
+              clearable
+            ></el-input>
           </el-form-item>
           <el-form-item>
             <el-button
@@ -44,6 +52,7 @@
             :before-close="taskMakeFn"
             style="width:630px height:484px"
             class="dialogVisible"
+            @close="taskMake = false"
           >
             <!-- upload -->
             <el-upload
@@ -123,6 +132,7 @@
           :visible="GoodsDialog"
           style="width:630px height:484px"
           class="dialogVisible"
+          @close="closeFn"
         >
           <el-form
             label-width="120px"
@@ -290,7 +300,6 @@ import {
   uploadImage,
 } from '@/api/sku'
 import repeatButton from '@/components/repeatButton/index.vue'
-import { getUserInfoAPI } from '@/api/user'
 
 export default {
   name: 'goodsManager',
@@ -355,11 +364,7 @@ export default {
     },
 
     taskMakeFn(done) {
-      this.$confirm('确认关闭？')
-        .then((_) => {
-          done()
-        })
-        .catch((_) => {})
+      done()
     },
     successFileExel(response, file, fileList) {
       console.log(response, file, fileList)
@@ -392,6 +397,8 @@ export default {
     async goodSearchFn() {
       const res = await getSkuSearchList({ skuName: this.form.searchName })
       this.tableData = res.data.currentPageRecords
+      this.results = res.data
+      this.pageIndex = this.results.pageIndex
       // console.log(this.tableData)
     },
     // 弹框里的类型
@@ -422,7 +429,20 @@ export default {
         const res = await reviseData(this.scopeRowSkuId, this.reviseGoodsForm)
         console.log(res)
         this.getSkuSearchList()
+        // 初始化数据
+        this.reviseGoodsForm = {
+          skuName: '',
+          skuImage: '',
+          price: '',
+          classId: '',
+          unit: '',
+          brandName: '',
+        }
       }
+    },
+
+    closeFn() {
+      this.GoodsDialog = false
       // 初始化数据
       this.reviseGoodsForm = {
         skuName: '',
@@ -460,16 +480,6 @@ export default {
     // 图片
     async handleAvatarSuccess(res, file) {
       this.reviseGoodsForm.skuImage = URL.createObjectURL(file.raw)
-      // console.log(this.imageUrl)
-      // this.reviseGoodsForm.skuImage = this.imageUrl
-      // console.log(this.reviseGoodsForm)
-      // 方法2
-      //  async handleAvatarSuccess(file)
-      // var formData = new FormData()
-      // formData.append('fileName', file.file)
-      // console.log(formData)
-      // const results = await uploadImage(formData)
-      // console.log(results)
     },
 
     beforeAvatarUpload(file) {
@@ -516,7 +526,7 @@ export default {
     position: relative;
     margin: 0 auto 50px;
     background: #fff;
-    border-radius: 2px;
+    border-radius: 10px;
     -webkit-box-shadow: 0 1px 3px rgb(0 0 0 / 30%);
     box-shadow: 0 1px 3px rgb(0 0 0 / 30%);
     -webkit-box-sizing: border-box;
@@ -557,5 +567,19 @@ export default {
   width: 178px;
   height: 178px;
   display: block;
+}
+.el-table thead {
+  background-color: #f5f5f5;
+}
+.el-table tr {
+  background-color: transparent;
+}
+.search {
+  background-color: #fff;
+  margin-bottom: 20px;
+  padding: 15px;
+  .el-form-item {
+    margin-bottom: 0;
+  }
 }
 </style>

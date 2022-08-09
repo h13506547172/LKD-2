@@ -2,177 +2,154 @@
   <div class="dashboard-container">
     <div class="app-container">
       <!-- 商品搜索 -->
-      <headerSearch></headerSearch>
+      <div class="ordersearch" style="display: flex">
+        <el-form :inline="true" :model="form" class="demo-form-inline">
+          <el-form-item label="订单编号:">
+            <el-input
+              v-model.trim="form.number"
+              placeholder="请输入订单编号"
+              clearable
+            ></el-input>
+          </el-form-item>
+        </el-form>
+        <!-- 日期 -->
+
+        <div class="time">
+          <span class="demonstration">选择日期:</span>
+          <el-date-picker
+            v-model="form.timeDate"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+          >
+          </el-date-picker>
+        </div>
+        <repeatButton icon="el-icon-search" type="search" @layclick="searchFn"
+          >搜索</repeatButton
+        >
+      </div>
+
       <!--  -->
       <div class="result">
-        <div class="operation">
-          <!-- 按钮 -->
-          <repeatButton
-            type="success"
-            size="large"
-            @layclick="dialogVisible = true"
-          >
-            <span class="el-icon-search"></span>
-            新建</repeatButton
-          >
-          <repeatButton
-            type="taskMake"
-            size="large"
-            @layclick="taskMake = true"
-          >
-            导入数据
-          </repeatButton>
-          <!-- 弹框 S-->
-          <el-dialog
-            title="新增工单"
-            :visible="dialogVisible"
-            :before-close="handleClose"
-            style="width:630px height:484px"
-            class="dialogVisible"
-          >
-            <el-form label-width="100px">
-              <el-form-item
-                label="设备编号"
-                :rules="{
-                  required: true,
-
-                  trigger: 'blur',
-                }"
-              >
-                <el-input
-                  type="text"
-                  placeholder="请输入内容"
-                  v-model="Form.deviceNum"
-                  maxlength="10"
-                  show-word-limit
-                ></el-input
-              ></el-form-item>
-
-              <el-form-item
-                label="工单类型"
-                :rules="{
-                  required: true,
-
-                  trigger: 'blur',
-                }"
-              >
-                <el-select v-model="Form.type" placeholder="请选择">
-                  <el-option label="区域一" value="shanghai"></el-option>
-                </el-select>
-              </el-form-item>
-              <el-form-item label="补货数量">
-                <el-button style="color: #5f84ff" icon="el-icon-edit-outline"
-                  >补货清单</el-button
-                >
-              </el-form-item>
-              <el-form-item
-                label="运营人员"
-                :rules="{
-                  required: true,
-
-                  trigger: 'blur',
-                }"
-              >
-                <el-select v-model="Form.people" placeholder="请选择">
-                  <el-option label="区域一" value="shanghai"></el-option>
-                </el-select>
-              </el-form-item>
-
-              <el-form-item
-                label="备注"
-                prop="desc"
-                :rules="{
-                  required: true,
-
-                  trigger: 'blur',
-                }"
-              >
-                <el-input
-                  type="textarea"
-                  placeholder="请输入备注（不超过40字）"
-                  v-model="Form.desc"
-                  maxlength="30"
-                  show-word-limit
-                >
-                </el-input>
-              </el-form-item>
-            </el-form>
-
-            <span slot="footer" class="dialog-footer">
-              <span
-                slot="footer"
-                class="dialog-footer operation"
-                style="justify-content: center"
-              >
-                <repeatButton
-                  type="taskMake"
-                  size="large"
-                  @layclick="dialogVisible = false"
-                  >取消</repeatButton
-                >
-                <repeatButton
-                  type="success"
-                  size="large"
-                  @layclick="dialogVisible = false"
-                >
-                  确定</repeatButton
-                >
-              </span>
-            </span>
-          </el-dialog>
-          <!-- 弹框 E-->
-
-          <!-- 弹框 S-->
-          <el-dialog
-            title="工单配置"
-            :visible="taskMake"
-            :before-close="taskMakeFn"
-            style="width:630px height:484px"
-            class="dialogVisible"
-          >
-            <span slot="footer" class="dialog-footer">
-              <span
-                slot="footer"
-                class="dialog-footer operation"
-                style="justify-content: center"
-              >
-                <repeatButton
-                  type="taskMake"
-                  size="large"
-                  @layclick="taskMake = false"
-                  >取消</repeatButton
-                >
-                <repeatButton
-                  type="success"
-                  size="large"
-                  @layclick="taskMake = false"
-                >
-                  确定</repeatButton
-                >
-              </span>
-            </span>
-          </el-dialog>
-          <!-- 弹框 E-->
-        </div>
         <!--  Q运营列表 -->
         <TaskList :tableData="tableData">
-          <el-table-column type="index" prop label="序号"> </el-table-column>
+          <el-table-column type="index" :index="indexMethod" prop label="序号">
+          </el-table-column>
+          <el-table-column prop="orderNo" label="订单编号"> </el-table-column>
+          <el-table-column prop="skuName" label="商品名称"> </el-table-column>
+          <el-table-column prop="price" label="订单金额">
+            <template v-slot="scope">
+              {{ (scope.row.price / 100).toFixed(2) }}
+            </template>
+          </el-table-column>
           <el-table-column prop="innerCode" label="设备编号"> </el-table-column>
-          <el-table-column prop="taskType.typeName" label="工单类型">
+          <el-table-column prop="status" label="订单状态">
+            <template v-slot="scope">
+              {{ scope.row.status | formStatus }}
+            </template>
           </el-table-column>
-          <el-table-column prop="createType" label="工单方式">
+          <el-table-column prop="createTime" label="订单日期">
+            <template v-slot="scope">
+              {{ scope.row.createTime }}
+            </template>
           </el-table-column>
-          <el-table-column
-            prop="taskStatusTypeEntity.statusName"
-            label="工单状态"
-          >
+          <el-table-column prop label="操作">
+            <template v-slot="scope">
+              <a href="#" style="color: #4368e1" @click="detailFn(scope.row)"
+                >查看详情</a
+              >
+            </template>
           </el-table-column>
-          <el-table-column prop="userName" label="运营人员"> </el-table-column>
-          <el-table-column prop="createTime" label="创建日期">
-          </el-table-column>
-          <el-table-column prop="查看详情" label="操作"> </el-table-column>
         </TaskList>
+        <!-- 弹框 -->
+        <el-dialog
+          class="orderDialog"
+          title="订单详情"
+          :visible.sync="orderVisible"
+          width="50%"
+          :before-close="orderClose"
+          style="border-radius: 10px"
+        >
+          <div class="pic">
+            <div>
+              <img src="../../assets/image/weixin.png" alt="" />
+              <span>出货成功</span>
+            </div>
+            <div><img src="../../assets/image/pic.png" alt="" /></div>
+          </div>
+          <!-- list -->
+          <div class="list">
+            <el-row>
+              <!-- left -->
+              <el-col :span="12"
+                ><div class="grid-content bg-purple">
+                  <el-row class="left" type="flex">
+                    <el-col :span="6"
+                      ><div class="grid-content bg-purple">
+                        <span> 订单编号 : </span>
+                        <span class="num">{{ list.orderNo }}</span>
+                      </div></el-col
+                    >
+                    <el-col :span="6"
+                      ><div class="grid-content bg-purple-light">
+                        <span> 设备编号 : </span>
+                        <span>{{ list.innerCode }}</span>
+                      </div></el-col
+                    >
+                    <el-col :span="6"
+                      ><div class="grid-content bg-purple">
+                        <span> 完成时间 : </span>
+                        <span>{{ list.updateTime }}</span>
+                      </div></el-col
+                    >
+                    <el-col :span="6"
+                      ><div class="grid-content bg-purple-light">
+                        <span> 设备地址 : </span>
+                        <span>{{ list.regionName }}</span>
+                      </div></el-col
+                    >
+                  </el-row>
+                </div></el-col
+              >
 
+              <!-- right  -->
+              <el-col :span="12"
+                ><div class="grid-content bg-purple-light">
+                  <el-row class="right" type="flex">
+                    <el-col :span="6"
+                      ><div
+                        class="grid-content bg-purple"
+                        style="display: flex"
+                      >
+                        <span> 商品名称 : </span>
+                        <span>{{ list.skuName }}</span>
+                      </div></el-col
+                    >
+                    <el-col :span="6"
+                      ><div class="grid-content bg-purple-light">
+                        <span> 订单金额 : </span>
+                        <span>{{ list.price / 100 }}</span>
+                      </div></el-col
+                    >
+                    <el-col :span="6"
+                      ><div class="grid-content bg-purple">
+                        <span> 创建时间 : </span>
+                        <span>{{ list.createTime }}</span>
+                      </div></el-col
+                    >
+                    <el-col :span="6"
+                      ><div class="grid-content bg-purple-light">
+                        <span> 支付方式 : </span>
+                        <span>{{ list.status | formStatus }}</span>
+                      </div></el-col
+                    >
+                  </el-row>
+                </div></el-col
+              >
+            </el-row>
+          </div>
+        </el-dialog>
         <!-- A底部 -->
         <div class="pagination-container">
           <el-row type="flex">
@@ -180,20 +157,17 @@
               <div>
                 共
                 <span> {{ results.totalCount }}</span>
-                条记录 第<span
-                  >{{ results.pageIndex }}/{{ results.totalPage }}</span
+                条记录 第<span>{{ pageIndex }}/{{ results.totalPage }}</span
                 >页
               </div></el-col
             >
-            <el-col :span="5">
+            <el-col :span="5" style="width: 340px">
               <el-button
-                @click="handleSizeChange"
+                @click="prePage"
                 style="background: #edf0f9; color: #d8dde3"
                 >上一页</el-button
               >
-              <el-button
-                @click="handleCurrentChange"
-                style="background: #d5ddf8"
+              <el-button @click="nextPage" style="background: #d5ddf8"
                 >下一页</el-button
               >
             </el-col>
@@ -205,82 +179,115 @@
 </template>
 
 <script>
-import headerSearch from '@/components/headerSearch'
 import TaskList from '@/components/TaskList'
 // api
+import { orderSearchList } from '@/api/order'
 import repeatButton from '@/components/repeatButton/index.vue'
 export default {
   data() {
     return {
+      form: {
+        number: '',
+        timeDate: '',
+      },
       tableData: [],
+      dialogVisible: false,
       results: {},
       pageIndex: 1,
-      dialogVisible: false,
-      taskMake: false,
-
-      // 表单
-      Form: {
-        deviceNum: '',
-        type: '',
-        people: '',
-        desc: '',
-        list: '',
-      },
-      taskMakeContent: { cordon: '' },
-      // 分页
-      currentPage: 1,
+      // 默认数据
+      orderVisible: false,
+      list: {},
     }
   },
   components: {
-    headerSearch,
     TaskList,
     repeatButton,
   },
   created() {
-    this.taskSearch()
+    this.orderSearchList()
+  },
+  filters: {
+    formStatus(val) {
+      if (val === 0) {
+        return '未支付'
+      } else if (val === 1) {
+        return '支付完成'
+      } else if (val === 2) {
+        return '出货成功'
+      } else if (val === 3) {
+        return '出货失败'
+      }
+    },
   },
   methods: {
-    onSubmit() {
-      console.log('submit!')
+    indexMethod(index) {
+      return (this.pageIndex - 1) * 10 + index + 1
     },
-    handleClose(done) {
-      this.$confirm('确认关闭？')
-        .then((_) => {
-          done()
-        })
-        .catch((_) => {})
+    // L: http://likede2-admin.itheima.net/likede/api/order-service/order/search?pageIndex=1&pageSize=10&startDate=2022-08-09&endDate=2022-08-13
+    // 获取列表
+    async orderSearchList() {
+      const res = await orderSearchList({
+        pageIndex: this.pageIndex,
+        pageSize: 10,
+        orderNo: this.form.number ? this.form.number : null,
+        startDate: this.form.timeDate[0] ? this.form.timeDate[0] : null,
+        endDate: this.form.timeDate[1] ? this.form.timeDate[1] : null,
+      })
+      // console.log(res.data)
+      this.results = res.data
+      this.pageIndex = res.data.pageIndex
+      this.tableData = res.data.currentPageRecords
     },
-    taskMakeFn(done) {
-      this.$confirm('确认关闭？')
-        .then((_) => {
-          done()
-        })
-        .catch((_) => {})
-    },
-    // // 获取列表
-    taskSearch() {
-      //   const res = await taskSearch({ pageIndex: this.pageIndex })
-      //   this.results = res.data
-      //   // console.log(this.results)
-      //   this.tableData = res.data.currentPageRecords
-      //   // console.log(this.results.pageIndex)
-      //   this.pageIndex = this.results.pageIndex
-    },
-
     // // 分页
-    handleSizeChange() {
+    async prePage() {
       this.pageIndex--
       if (this.pageIndex < 1) return
-      console.log(this.pageIndex)
-      const res = this.taskSearch({ pageIndex: this.pageIndex })
+      const res = await orderSearchList({
+        pageIndex: this.pageIndex,
+        pageSize: 10,
+        orderNo: this.form.number ? this.form.number : null,
+        startDate: this.form.timeDate[0] ? this.form.timeDate[0] : null,
+        endDate: this.form.timeDate[1] ? this.form.timeDate[1] : null,
+      })
       this.tableData = res.data.currentPageRecords
-      console.log(this.tableData)
     },
-    handleCurrentChange() {
-      console.log(this.pageIndex)
+    async nextPage() {
       this.pageIndex++
-      this.taskSearch({ pageIndex: this.pageIndex })
-      console.log(this.tableData)
+      const res = await orderSearchList({
+        pageIndex: this.pageIndex,
+        pageSize: 10,
+        orderNo: this.form.number ? this.form.number : null,
+        startDate: this.form.timeDate[0] ? this.form.timeDate[0] : null,
+        endDate: this.form.timeDate[1] ? this.form.timeDate[1] : null,
+      })
+      this.tableData = res.data.currentPageRecords
+    },
+
+    // 搜索
+    async searchFn() {
+      this.pageIndex = 1
+      const res = await orderSearchList({
+        pageIndex: this.pageIndex,
+        pageSize: 10,
+        orderNo: this.form.number ? this.form.number : null,
+        startDate: this.form.timeDate[0] ? this.form.timeDate[0] : null,
+        endDate: this.form.timeDate[1] ? this.form.timeDate[1] : null,
+      })
+
+      console.log(res.data)
+      this.results = res.data
+      this.pageIndex = res.data.pageIndex
+      this.tableData = res.data.currentPageRecords
+    },
+    //查看详情
+    detailFn(val) {
+      console.log(val)
+      this.list = val
+      this.orderVisible = true
+    },
+    // 弹框
+    orderClose(done) {
+      done()
     },
   },
 }
@@ -324,6 +331,45 @@ export default {
   }
   .el-dialog .el-dialog__body .el-form-item .el-form-item__content {
     width: 396px;
+  }
+}
+.orderDialog {
+  :deep(.el-dialog) {
+    border-radius: 10px;
+    color: rgb(102, 102, 102);
+    background-color: rgba(236, 236, 236, 0.39);
+  }
+  .pic {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(236, 236, 236, 0.39);
+    height: 54px;
+    position: relative;
+    padding: 0 76px 0 22px;
+    margin-bottom: 30px;
+    span {
+      position: absolute;
+      top: 17px;
+      left: 58px;
+    }
+  }
+  .left,
+  .right {
+    flex-direction: column;
+    justify-content: center;
+    .el-col-6 {
+      height: 48px;
+      width: 85%;
+    }
+  }
+}
+.ordersearch {
+  background-color: #fff;
+  margin-bottom: 20px;
+  padding: 15px;
+  .el-form-item {
+    margin-bottom: 0;
   }
 }
 </style>

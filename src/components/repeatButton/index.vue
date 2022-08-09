@@ -78,4 +78,11 @@ div {
   height: 40px;
   line-height: 60px;
 }
+.search {
+  width: 80px;
+  height: 40px;
+  background-color: #5f84ff;
+  color: #fff;
+  margin: 0 0 0 10px;
+}
 </style>

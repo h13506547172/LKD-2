@@ -4,8 +4,8 @@
       <!-- 商品搜索 -->
       <div class="search">
         <el-form :inline="true" :model="form" class="demo-form-inline">
-          <el-form-item label="商品搜索">
-            <el-input v-model.trim="form.searchName"></el-input>
+          <el-form-item label="策略搜索：">
+            <el-input v-model.trim="form.searchName" clearable></el-input>
           </el-form-item>
           <el-form-item>
             <el-button
@@ -33,6 +33,7 @@
             :before-close="handleClose"
             style="width:630px height:484px"
             class="dialogVisible"
+            @close="createClose"
           >
             <!-- form    :rules="formRules"-->
             <el-form ref="form" :model="form" label-width="80px" class="dialog">
@@ -123,7 +124,8 @@
           :visible.sync="detailvisible"
           width="50%"
           :before-close="handleClose"
-          >>
+          @close="closeFn"
+        >
           <span>策略名称:{{ detailName }}</span>
           <TaskList :tableData="detailStrategyList" v-if="detailStrategyList">
             <el-table-column
@@ -225,11 +227,7 @@ export default {
       console.log('submit!')
     },
     handleClose(done) {
-      this.$confirm('确认关闭？')
-        .then((_) => {
-          done()
-        })
-        .catch((_) => {})
+      done()
     },
 
     // 获取基本列表
@@ -270,8 +268,10 @@ export default {
         pageSize: 10,
         policyName: this.form.searchName,
       })
-      console.log(res)
+      // console.log(res)
       this.tableData = res.data.currentPageRecords
+      this.results = res.data
+      this.listpageIndex = this.results.pageIndex
     },
     // 删除
     async deleteFn(val) {
@@ -337,7 +337,7 @@ export default {
       this.strategyForm.methods = val.discount
       this.policyId = val.policyId
     },
-    // onsave
+    // onsave 确定
     async onSaveFn() {
       if (this.titleName === '新增策略') {
         const res = await newStrategy(
@@ -354,8 +354,17 @@ export default {
         )
         this.getStrategyList()
         console.log(res)
+        this.strategyForm = { name: '', methods: '' }
       }
       this.dialogVisible = false
+    },
+    // 详情
+    closeFn() {
+      this.detailvisible = false
+    },
+    createClose() {
+      this.dialogVisible = false
+      this.strategyForm = { name: '', methods: '' }
     },
   },
 }
@@ -417,6 +426,14 @@ export default {
     width: 25px;
     height: 15px;
     text-align: center;
+  }
+}
+.search {
+  background-color: #fff;
+  margin-bottom: 20px;
+  padding: 15px;
+  .el-form-item {
+    margin-bottom: 0;
   }
 }
 </style>
