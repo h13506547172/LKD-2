@@ -1,9 +1,19 @@
 <template>
-  <div>设备类型管理</div>
+  <div>
+    <searchBar></searchBar>
+    <infoBar></infoBar>
+  </div>
 </template>
 
 <script>
+import searchBar from "./component/searchBar.vue";
+import infoBar from "./component/infoBar.vue";
+
 export default {
+  components: {
+    searchBar,
+    infoBar
+  },
   data() {
     return {}
   },
