@@ -42,7 +42,7 @@ import {
   getSupplyCount,
   getRepairCount,
   getSkuCollect,
-} from '@/api/equipment'
+} from '@/api/equipment1'
 export default {
   name: 'infoPop',
   props: {
