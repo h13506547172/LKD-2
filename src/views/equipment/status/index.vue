@@ -91,7 +91,7 @@
 
 <script>
 import myBtn from '@/components/myBtn.vue'
-import { getVmList } from '@/api/equipment'
+import { getVmList } from '@/api/equipment1'
 import infoPop from './components/infoPop.vue'
 
 export default {
