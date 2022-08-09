@@ -54,6 +54,7 @@
         <!-- :disabled='pageIndex==1 ? true : false' -->
         <el-button
           type="info"
+          class="butn1"
           @click="previousFn"
           :disabled="pageIndex == 1 ? true : false"
           >上一页</el-button
@@ -208,8 +209,8 @@ export default {
     text-align: center;
     margin-left: 20px;
   }
-  // .butn1 {
-  //   margin-left: 1170px;
-  // }
+  .butn1 {
+    margin-left: 1170px;
+  }
 }
 </style>

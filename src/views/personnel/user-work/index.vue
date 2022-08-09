@@ -101,6 +101,7 @@
           <span>{{ pageIndex }}/{{ datapage.totalPage }}页</span>
         </div>
         <el-button
+        class="butn1"
           type="info"
           @click="previousFn"
           :disabled="pageIndex == 1 ? true : false"
@@ -248,6 +249,9 @@ export default {
     line-height: 30px;
     text-align: center;
     margin-left: 20px;
+  }
+    .butn1 {
+    margin-left: 1170px;
   }
 }
 

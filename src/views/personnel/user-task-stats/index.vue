@@ -105,7 +105,14 @@
               </div>
             </div>
           </div>
-        </div></el-col
+          <div class='boximg'>
+          <img src="http://likede2-admin.itheima.net/img/empty.87c4f71b.png" alt="">
+          <p>暂无数据</p>
+        </div>
+        </div>
+        
+        
+        </el-col
       >
       <el-col :span="7"
         ><div class="grid-co">
@@ -139,7 +146,12 @@
               >运营人员</span
             >
           </div>
-        </div></el-col
+           <div class="boximg1">
+          <img src="http://likede2-admin.itheima.net/img/empty.87c4f71b.png" alt="">
+          <p>暂无数据</p>
+        </div>
+        </div>
+         </el-col
       >
     </el-row>
   </div>
@@ -287,6 +299,14 @@ body {
     background-color: rgb(255, 255, 255);
     box-shadow: 0 1px 0 rgb(97, 97, 97);
   }
+  .boximg{
+    margin-top: 200px;
+    margin-left: 400px;
+    p{
+     margin-left: 30px;
+    }
+  }
+
 }
 
 // 下面右侧
@@ -326,6 +346,13 @@ body {
       border-radius: 5px;
       background-color: rgb(255, 255, 255);
       box-shadow: 0 1px 0 rgb(97, 97, 97);
+    }
+  }
+      .boximg1{
+    margin-top: 100px;
+    margin-left: 120px;
+    p{
+     margin-left: 30px;
     }
   }
 }
