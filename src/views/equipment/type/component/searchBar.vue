@@ -1,11 +1,11 @@
 <template>
   <div class="search">
     <el-form ref="Form" :model="FormData" label-width="80px" class="Form">
-      <el-form-item label="请输入">
-        <el-input v-model="FormData.taskCode" placeholder="请输入"></el-input>
+      <el-form-item label="型号搜索">
+        <el-input v-model="FormData.name" placeholder="请输入"></el-input>
       </el-form-item>
     </el-form>
-    <search></search>
+    <search @click.native='passFn'></search>
   </div>
 </template>
 
@@ -19,15 +19,18 @@ export default {
   data() {
     return {
       FormData: {
-        taskCode: '',
-        status: '',
+        name: '',
       },
     }
   },
 
   created() {},
 
-  methods: {},
+  methods: {
+    passFn(){
+      this.$emit('passData',this.FormData)
+    }
+  },
 }
 </script>
 

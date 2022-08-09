@@ -1,7 +1,7 @@
 <template>
   <div>
-    <searchBar></searchBar>
-    <infoBar></infoBar>
+    <searchBar @passData='passDataFn'></searchBar>
+    <infoBar :name='name'></infoBar>
   </div>
 </template>
 
@@ -15,12 +15,18 @@ export default {
     infoBar
   },
   data() {
-    return {}
+    return {
+      name: ''
+    }
   },
 
   created() {},
 
-  methods: {},
+  methods: {
+    passDataFn(e){
+      this.name = e.name
+    }
+  },
 }
 </script>
 

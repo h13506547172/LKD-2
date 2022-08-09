@@ -24,3 +24,12 @@ export function delvmTypeListAPI(typeId) {
     method: 'DELETE',
   })
 }
+
+// 新建 /vm-service/vmType
+export function addvmAPI(data) {
+  return request({
+    url: '/vm-service/vmType',
+    method: 'POST',
+    data
+  })
+}
