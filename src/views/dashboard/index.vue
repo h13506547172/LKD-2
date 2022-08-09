@@ -1,6 +1,8 @@
 <template>
   <div class="dashboard-container">
     <div class="dashboard-text">name: {{ name }}</div>
+    <!-- sku -->
+    <shuTop></shuTop>
   </div>
 </template>
 
@@ -12,8 +14,8 @@ export default {
   computed: {
     ...mapGetters(['name']),
   },
-  methods: {
-  },
+  methods: {},
+  components: {},
 }
 </script>
 
