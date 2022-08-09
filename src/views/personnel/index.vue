@@ -350,7 +350,7 @@ export default {
     margin-left: 20px;
   }
     .butn1 {
-    margin-left: 1170px;
+    margin-left: 1000px;
   }
 }
 // 上传
