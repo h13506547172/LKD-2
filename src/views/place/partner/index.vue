@@ -112,22 +112,24 @@
               :max="100"
             ></el-input-number>
           </el-form-item>
-          <el-form-item label="账号：" prop="account">
-            <el-input
-              v-model="myForm.account"
-              placeholder="请输入"
-              maxlength="18"
-              show-word-limit
-            ></el-input>
-          </el-form-item>
-          <el-form-item label="密码：" prop="password">
-            <el-input
-              v-model="myForm.password"
-              placeholder="请输入"
-              maxlength="20"
-              show-word-limit
-            ></el-input>
-          </el-form-item>
+          <div v-if="addTitle == '新增合作商'">
+            <el-form-item label="账号：" prop="account">
+              <el-input
+                v-model="myForm.account"
+                placeholder="请输入"
+                maxlength="18"
+                show-word-limit
+              ></el-input>
+            </el-form-item>
+            <el-form-item label="密码：" prop="password">
+              <el-input
+                v-model="myForm.password"
+                placeholder="请输入"
+                maxlength="20"
+                show-word-limit
+              ></el-input>
+            </el-form-item>
+          </div>
           <!-- 结束 -->
         </el-form>
 
@@ -362,7 +364,13 @@ export default {
           this.indexOne = 0
           this.getPlaceList()
         } else {
-          const res = await editPartner(this.editId, send)
+          const send2 = {
+            name: this.myForm.name,
+            contact: this.myForm.contact,
+            mobile: this.myForm.mobile,
+            ratio: this.myForm.ratio,
+          }
+          await editPartner(this.editId, send2)
           this.$message.success('修改成功~')
           this.loadPageFn()
         }
