@@ -168,3 +168,67 @@ export function delNodeApi(id) {
     method: 'DELETE',
   })
 }
+
+/**
+ * 合作商搜索
+ * @param {*} params
+ * @returns
+ */
+export function getPartnerList(params) {
+  return request({
+    url: `user-service/partner/search`,
+    method: 'GET',
+    params,
+  })
+}
+
+/**
+ * 新增合作商
+ * @param {*} data
+ * @returns
+ */
+export function addPartner(data) {
+  return request({
+    url: `user-service/partner`,
+    method: 'POST',
+    data,
+  })
+}
+
+/**
+ * 修改合作商
+ * @param {*} id
+ * @returns
+ */
+export function editPartner(id, data) {
+  return request({
+    url: `user-service/partner/${id}`,
+    method: 'PUT',
+    data,
+  })
+}
+
+/**
+ * 重置合作商密码
+ * @param {*} id
+ * @returns
+ */
+export function resetPartnerPassWord(id) {
+  return request({
+    url: `user-service/partner/resetPwd/${id}`,
+    method: 'PUT',
+  })
+}
+
+/**
+ * 删除合作商
+ * @param {*} id
+ * @returns
+ */
+
+export function delPartner(id) {
+  return request({
+    url: `user-service/partner/${id}`,
+    method: 'DELETE',
+  })
+}

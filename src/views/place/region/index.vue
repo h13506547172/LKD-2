@@ -65,6 +65,7 @@
         :visible.sync="createVisible"
         width="35%"
         class="borderR"
+        @close="closeFn"
       >
         <el-form ref="form" :model="myForm" label-width="100px" :rules="rules">
           <el-form-item label="区域名称：" prop="regionName">
@@ -150,6 +151,7 @@ export default {
         regionName: [{ required: true, message: '请输入', trigger: 'blur' }],
         remark: [{ required: true, message: '请输入', trigger: 'blur' }],
       },
+      searchInputRes: '',
     }
   },
 
@@ -158,15 +160,16 @@ export default {
   },
 
   methods: {
+    closeFn() {},
     //清空搜索栏触发刷新
     clearFn() {
+      this.indexOne = 0
+      this.searchInputRes = ''
       this.getPlaceList()
     },
 
     //点击新建按钮
     addCreate() {
-      if (this.$refs.form !== undefined) this.$refs.form.resetFields()
-
       this.addTitle = '新增区域'
       this.myForm.regionName = ''
       this.myForm.remark = ''
@@ -181,7 +184,6 @@ export default {
     },
     //修改按钮
     editBtnFn(val) {
-      if (this.$refs.form !== undefined) this.$refs.form.resetFields()
       this.editcontent = val
       this.myForm.regionName = val.name
       this.myForm.remark = val.remark
@@ -193,6 +195,9 @@ export default {
       try {
         await delPlaceApi(val.id)
         this.$message.success('删除成功~')
+        this.pageIndex = 1
+        this.pageSize = 10
+        this.indexOne = 0
         this.getPlaceList()
       } catch (error) {}
     },
@@ -200,8 +205,11 @@ export default {
     //获取头部的数据并进行筛选处理
     saerchBtn() {
       this.searchInput = this.searchInput.trim()
+      //将搜索框的值给搜索框的维护对象，能够解决bug=>搜索的时候修改输入框会影响跳页结果
+      this.searchInputRes = this.searchInput
       this.pageIndex = 1
       this.pageSize = 10
+      this.indexOne = 0
       this.loadPageFn()
     },
     //根据传来的页码刷新数据
@@ -209,7 +217,7 @@ export default {
       const send = {
         pageIndex: this.pageIndex,
         pageSize: this.pageSize,
-        name: this.searchInput.trim(),
+        name: this.searchInputRes,
       }
       try {
         const { data } = await getPlaceList(send)
@@ -261,6 +269,9 @@ export default {
         if (this.addTitle == '新增区域') {
           await addPlaceListApi(send)
           this.$message.success('添加成功~')
+          this.pageSize = 10
+          this.pageIndex = 1
+          this.indexOne = 0
           this.getPlaceList()
         } else {
           const res = await editPlaceInfoApi(this.editcontent.id, send)

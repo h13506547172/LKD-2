@@ -115,8 +115,6 @@
                 v-model="myForm.regionId"
                 filterable
                 placeholder="请选择"
-                clearable
-                @clear="clearFn"
               >
                 <el-option
                   v-for="item in nodeList"
@@ -135,8 +133,6 @@
                 v-model="myForm.businessId"
                 filterable
                 placeholder="请选择"
-                clearable
-                @clear="clearFn"
               >
                 <el-option
                   v-for="item in businessTypeList"
@@ -155,9 +151,7 @@
                 v-model="myForm.ownerId"
                 filterable
                 placeholder="请选择"
-                clearable
                 @change="getOwnerIdFn"
-                @clear="clearFn"
               >
                 <el-option
                   v-for="item in partnerList"
@@ -171,13 +165,17 @@
           </el-form-item>
 
           <el-form-item label="详细地址：" prop="addrInfo">
-            <wl-address
-              ref="wladdress"
-              class="my-wl-address"
-              :type="address_mode"
-              :address.sync="address_data"
+            <el-cascader
+              placeholder="请选择"
+              v-if="isShowcascader"
+              size="large"
+              :options="options"
+              v-model="selectedOptions"
+              :props="{ label: 'label', value: 'label' }"
+              @change="handleChange"
+              filterable
             >
-            </wl-address>
+            </el-cascader>
             <el-input
               v-model="myForm.addrInfo"
               maxlength="60"
@@ -210,7 +208,7 @@
 
 <script>
 import myBtn from '@/components/myBtn.vue'
-
+import { regionData, CodeToText, TextToCode } from 'element-china-area-data'
 import {
   getNodeListApi,
   getPlaceList,
@@ -237,9 +235,7 @@ export default {
         addrInfo: '', //详细地址
         id: '',
       },
-      //三级地区联级
-      address_mode: 'cascader', // default普通 cascader级联
-      address_data: '', // 选中地址
+
       owner: {}, //合作商选中信息
       partnerList: [], //归属合作商列表
       businessTypeList: [], //所属商圈的列表
@@ -268,18 +264,14 @@ export default {
         addrInfo: [{ required: true, message: '请输入', trigger: 'blur' }],
       },
       nodeList: [], //搜索栏2的下拉菜单
+      searchInputRes: '',
+      //三级城市选择
+      options: regionData,
+      selectedOptions: [],
+      isShowcascader: true,
     }
   },
-  watch: {
-    address_data(val) {
-      if (val === '') return
-      const res = JSON.parse(val).map((item) => item.name)
-      if (res[0] === res[1]) {
-        res.shift()
-      }
-      this.myForm.addr = res.join('-')
-    },
-  },
+
   computed: {},
   components: {
     myBtn,
@@ -293,9 +285,24 @@ export default {
   },
 
   methods: {
+    //三级城市选择后的处理
+    handleChange(value) {
+      this.myForm.addr = value.join('-')
+    },
     //关闭窗口
     closeFn() {
-      this.$refs.wladdress.cascader_val = []
+      /*   this.myForm = {
+        name: '', //点位名称
+        regionId: '', //所在区域
+        businessId: '', //所属商圈
+        ownerId: '', //合作商ID
+        ownerName: '', //合作商名字
+        addr: '', //选择器地址
+        addrInfo: '', //详细地址
+        id: '',
+      }*/
+      /* this.selectedOptions = ''
+      this.$refs.form.resetFields() */
     },
     //新增按钮中的归属合作商
     getOwnerIdFn(val) {
@@ -304,12 +311,25 @@ export default {
     },
     //清空搜索栏触发刷新
     clearFn() {
-      // this.getNodeList()
-      this.saerchBtn()
+      this.indexOne = 0
+      this.searchInputRes = ''
+      this.getNodeList()
     },
 
     //点击新建按钮
     async addCreate() {
+      this.selectedOptions = ''
+      this.myForm = {
+        name: '', //点位名称
+        regionId: '', //所在区域
+        businessId: '', //所属商圈
+        ownerId: '', //合作商ID
+        ownerName: '', //合作商名字
+        addr: '', //选择器地址
+        addrInfo: '', //详细地址
+        id: '',
+      }
+
       //获取商圈类型
       const { data } = await getBusinessTypeApi()
       this.businessTypeList = data
@@ -318,11 +338,12 @@ export default {
         data: { currentPageRecords },
       } = await getPartnerListApi()
       this.partnerList = currentPageRecords
-      if (this.$refs.form !== undefined) {
-        this.$refs.form.resetFields()
-      }
+
       this.addTitle = '新增点位'
       this.createVisible = true
+      this.$nextTick(() => {
+        this.$refs.form.clearValidate()
+      })
     },
     //查看详情按钮
     async infoBtnFn(val) {
@@ -332,8 +353,8 @@ export default {
     },
     //修改按钮
     async editBtnFn(val) {
-      if (this.$refs.form !== undefined) this.$refs.form.resetFields()
       //点击修改后状态回显↓
+      this.createVisible = true
       this.myForm.name = val.name
       this.myForm.regionId = val.regionId
       this.myForm.businessId = val.businessType.id
@@ -343,15 +364,9 @@ export default {
       const addrR = val.addr.substring(val.addr.lastIndexOf('-') + 1)
       this.myForm.addrInfo = addrR
       this.myForm.addr = val.addr.substring(0, val.addr.lastIndexOf('-'))
-      /*  let addrDeep = val.addr.substring(0, val.addr.lastIndexOf('-'))
-      addrDeep = addrDeep.split('-')
-      let myRes = []
-      addrDeep.forEach((item) => {
-        myRes.push({ name: item, code: '1' })
-      })
-      console.log(JSON.stringify(myRes))
-      this.$refs.wladdress.cascader_val = JSON.stringify(myRes) */
-      // this.$refs.wladdress.cascader_val = [name:]
+      let r1 = val.addr.substring(0, val.addr.lastIndexOf('-'))
+      r1 = r1.split('-')
+      this.selectedOptions = r1
       //获取商圈类型
       const { data } = await getBusinessTypeApi()
       this.businessTypeList = data
@@ -361,22 +376,27 @@ export default {
       } = await getPartnerListApi()
       this.partnerList = currentPageRecords
       this.addTitle = '修改点位'
-      this.createVisible = true
     },
     //删除按钮
     async delBtnFn(val) {
       try {
         await delNodeApi(val.id)
         this.$message.success('删除成功~')
-        this.loadPageFn()
+        this.pageIndex = 1
+        this.pageSize = 10
+        this.indexOne = 0
+        this.getNodeList()
       } catch (error) {}
     },
 
     //获取头部的数据并进行筛选处理
     saerchBtn() {
       this.searchInput = this.searchInput.trim()
+      //将搜索框的值给搜索框的维护对象，能够解决bug=>搜索的时候修改输入框会影响跳页结果
+      this.searchInputRes = this.searchInput
       this.pageIndex = 1
       this.pageSize = 10
+      this.indexOne = 0
       this.loadPageFn()
     },
     //根据传来的页码刷新数据
@@ -384,7 +404,7 @@ export default {
       const send = {
         pageIndex: this.pageIndex,
         pageSize: this.pageSize,
-        name: this.searchInput.trim(),
+        name: this.searchInputRes,
         regionId: this.searchInput2,
       }
       try {
@@ -454,6 +474,9 @@ export default {
           }
           await addNodeApi(send)
           this.$message.success('添加成功~')
+          this.pageSize = 10
+          this.pageIndex = 1
+          this.indexOne = 0
           this.getNodeList()
         } else {
           const send = {
