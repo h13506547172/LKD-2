@@ -263,6 +263,10 @@ export default {
       })
       console.log(res, this.form.name)
       this.PartnerCollectList = res.data.currentPageRecords
+      // 重新渲染数据
+      this.getTotalBill()
+      this.getOrderAmount()
+      this.getOrderCount()
     },
     // 获取一定时间范围之内的收入
     //  http://likede2-admin.itheima.net/likede/api/order-service/report/orderAmount?start=2022-08-01+00:00:00&end=2022-08-09+23:59:59

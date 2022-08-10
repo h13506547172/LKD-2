@@ -31,7 +31,6 @@
             :title="titleName"
             :visible="dialogVisible"
             :before-close="handleClose"
-            style="width:630px height:484px"
             class="dialogVisible"
             @close="createClose"
           >
@@ -238,7 +237,7 @@ export default {
         pageIndex: this.listpageIndex,
         pageSize: 10,
       })
-      console.log(res)
+      // console.log(res)
       this.tableData = res.data.currentPageRecords
       this.results = res.data
       this.listpageIndex = this.results.pageIndex
@@ -275,7 +274,7 @@ export default {
     },
     // 删除
     async deleteFn(val) {
-      console.log(val)
+      // console.log(val)
       try {
         await deleteStrategy(val.policyId, {
           pageIndex: this.pageIndex,
@@ -295,7 +294,7 @@ export default {
       this.detailvisible = true
       this.detailName = val.policyName
       this.currentId = val.policyId
-      console.log(this.currentId)
+      // console.log(this.currentId)
       try {
         const res = await detailStrategy(this.currentId, this.pageIndex, 10)
         this.detailStrategyList = res.data.currentPageRecords
@@ -307,7 +306,7 @@ export default {
     // 点击上一页、、下一页
     //上一页 // 分页
     async handleSizeChange() {
-      console.log(this.currentId) //当前的id
+      // console.log(this.currentId) //当前的id
       this.pageIndex--
       if (this.pageIndex < 1) return
       const res = await detailStrategy(this.currentId, this.pageIndex, 10)
@@ -316,9 +315,9 @@ export default {
     //下一页 // 分页
     async handleCurrentChange() {
       this.pageIndex++
-      console.log(this.pageIndex)
+      // console.log(this.pageIndex)
       const res = await detailStrategy(this.currentId, this.pageIndex, 10)
-      console.log(res)
+      // console.log(res)
       this.detailStrategyList = res.data.currentPageRecords
     },
     //点击 新建
@@ -331,7 +330,7 @@ export default {
     async reviseFn(val) {
       this.titleName = '修改策略'
       this.dialogVisible = true
-      console.log(val)
+      // console.log(val)
       // 回显数据
       this.strategyForm.name = val.policyName
       this.strategyForm.methods = val.discount
@@ -344,7 +343,7 @@ export default {
           this.strategyForm.name,
           this.strategyForm.methods,
         )
-        console.log(res)
+        // console.log(res)
         this.getStrategyList()
       } else {
         const res = await reviseStrategy(
@@ -353,7 +352,7 @@ export default {
           this.strategyForm.methods,
         )
         this.getStrategyList()
-        console.log(res)
+        // console.log(res)
         this.strategyForm = { name: '', methods: '' }
       }
       this.dialogVisible = false
@@ -393,22 +392,20 @@ export default {
   background: #fff;
   padding: 32px 16px;
 }
+
+.el-dialog__wrapper .el-dialog {
+  position: relative;
+  margin: 0 auto 50px;
+  background: #fff;
+  border-radius: 20px;
+  box-sizing: border-box;
+  width: 630px;
+  height: 484px;
+}
 .dialogVisible {
-  :deep(.el-dialog) {
-    position: relative;
-    margin: 0 auto 50px;
-    background: #fff;
-    border-radius: 2px;
-    -webkit-box-shadow: 0 1px 3px rgb(0 0 0 / 30%);
-    box-shadow: 0 1px 3px rgb(0 0 0 / 30%);
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-    width: 630px;
-    height: 484px;
-  }
-  .el-dialog .el-dialog__body .el-form-item .el-form-item__content {
-    width: 396px;
-  }
+  // .el-dialog .el-dialog__body .el-form-item .el-form-item__content {
+  //   width: 396px;
+  // }
   .arrow-up {
     position: absolute;
     right: 13px;

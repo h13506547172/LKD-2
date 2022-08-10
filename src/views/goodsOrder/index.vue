@@ -36,7 +36,11 @@
         <TaskList :tableData="tableData">
           <el-table-column type="index" :index="indexMethod" prop label="序号">
           </el-table-column>
-          <el-table-column prop="orderNo" label="订单编号"> </el-table-column>
+          <el-table-column prop="orderNo" label="订单编号">
+            <template v-slot="scope">
+              <span class="sin-line"> {{ scope.row.orderNo }}</span>
+            </template>
+          </el-table-column>
           <el-table-column prop="skuName" label="商品名称"> </el-table-column>
           <el-table-column prop="price" label="订单金额">
             <template v-slot="scope">
@@ -51,7 +55,7 @@
           </el-table-column>
           <el-table-column prop="createTime" label="订单日期">
             <template v-slot="scope">
-              {{ scope.row.createTime }}
+              {{ scope.row.createTime.replace(/T/gi, ' ') }}
             </template>
           </el-table-column>
           <el-table-column prop label="操作">
@@ -295,14 +299,14 @@ export default {
         endDate: this.form.timeDate[1] ? this.form.timeDate[1] : null,
       })
 
-      console.log(res.data)
+      // console.log(res.data)
       this.results = res.data
       this.pageIndex = res.data.pageIndex
       this.tableData = res.data.currentPageRecords
     },
     //查看详情
     detailFn(val) {
-      console.log(val)
+      // console.log(val)
       this.list = val
       this.orderVisible = true
     },
@@ -392,5 +396,13 @@ export default {
   .el-form-item {
     margin-bottom: 0;
   }
+}
+.sin-line {
+  /* 第一步：让文字强制一行显示 */
+  white-space: nowrap;
+  /* 第二步：溢出隐藏 */
+  overflow: hidden;
+  /* 第三步：溢出的内容省略号显示 */
+  text-overflow: ellipsis;
 }
 </style>
