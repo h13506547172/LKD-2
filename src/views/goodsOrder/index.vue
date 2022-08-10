@@ -73,10 +73,31 @@
         >
           <div class="pic">
             <div>
-              <img src="../../assets/image/weixin.png" alt="" />
-              <span>出货成功</span>
+              <img
+                v-if="list.status === 2"
+                src="../../assets/image/weixin.png"
+                alt=""
+              />
+              <img
+                v-else-if="list.status === 0"
+                src="../../assets/image/下载 (3)出货失败.png"
+                alt=""
+              />
+              <span v-if="list.status === 2">出货成功</span>
+              <span v-else-if="list.status === 0">未支付</span>
             </div>
-            <div><img src="../../assets/image/pic.png" alt="" /></div>
+            <div>
+              <img
+                v-if="list.status === 2"
+                src="../../assets/image/pic.png"
+                alt=""
+              />
+              <img
+                v-else-if="list.status === 0"
+                src="../../assets/image/失败出货.png"
+                alt=""
+              />
+            </div>
           </div>
           <!-- list -->
           <div class="list">

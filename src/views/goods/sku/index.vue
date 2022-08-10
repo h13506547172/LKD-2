@@ -54,19 +54,33 @@
             class="dialogVisible"
             @close="taskMake = false"
           >
-            <!-- upload -->
-            <el-upload
-              class="upload-demo"
-              action="https://jsonplaceholder.typicode.com/posts/"
-              :file-list="fileExelList"
-              accept=".xls,.xlsx"
-              :on-success="successFileExel"
-            >
-              <el-button size="small" type="primary">点击上传</el-button>
-              <div slot="tip" class="el-upload__tip">
-                只能上传jpg/png文件，且不超过500kb
-              </div>
-            </el-upload>
+            <div>
+              <el-upload
+                drag
+                :limit="limitNum"
+                :auto-upload="false"
+                accept=".xls, .xlsx"
+                :before-upload="beforeUploadFile"
+                :on-change="fileChange"
+                :on-exceed="exceedFile"
+                :on-success="handleSuccess"
+                :on-error="handleError"
+                :file-list="fileExelList"
+              >
+                <i class="el-icon-upload"></i>
+                <div class="el-upload__text">
+                  将文件拖到此处，或<em>点击上传</em>
+                </div>
+                <div class="el-upload__tip" slot="tip">
+                  只能上传xlsx文件，且不超过10M
+                </div>
+              </el-upload>
+              <br />
+              <el-button size="small" type="primary" @click="uploadFile"
+                >立即上传</el-button
+              >
+              <el-button size="small">取消</el-button>
+            </div>
 
             <!-- upload -->
             <span slot="footer" class="dialog-footer">
@@ -344,7 +358,8 @@ export default {
       disabled: false,
       // 文件上传
       fileExelList: [],
-      scopeRowSkuId: '',
+
+      limitNum: 1, // 上传excell时，同时允许上传的最大数
     }
   },
   components: {
@@ -477,6 +492,19 @@ export default {
       // console.log(res)
     },
 
+    // 上传excel
+    async uploadFile() {
+      this.taskMake = false
+      if (this.fileList.length === 0) {
+        this.$message.warning('请上传文件')
+      } else {
+        let form = new FormData()
+        form.append('file', this.fileList)
+        const res = await transfromData({ form })
+        console.log(res)
+      }
+    },
+
     // 图片
     async handleAvatarSuccess(res, file) {
       this.reviseGoodsForm.skuImage = URL.createObjectURL(file.raw)
@@ -494,6 +522,43 @@ export default {
       }
       return isJPG && isLt2M
     },
+  },
+
+  // excel
+  // 文件超出个数限制时的钩子
+  exceedFile(files, fileList) {
+    this.$message.warning(
+      `只能选择 ${this.limitNum} 个文件，当前共选择了 ${
+        files.length + fileList.length
+      } 个`,
+    )
+  },
+  // 文件状态改变时的钩子
+  fileChange(file, fileList) {
+    console.log(file.raw)
+    this.fileList.push(file.raw)
+    console.log(this.fileList)
+  },
+  // 上传文件之前的钩子, 参数为上传的文件,若返回 false 或者返回 Promise 且被 reject，则停止上传
+  beforeUploadFile(file) {
+    console.log('before upload')
+    console.log(file)
+    let extension = file.name.substring(file.name.lastIndexOf('.') + 1)
+    let size = file.size / 1024 / 1024
+    if (extension !== 'xlsx') {
+      this.$message.warning('只能上传后缀是.xlsx的文件')
+    }
+    if (size > 10) {
+      this.$message.warning('文件大小不得超过10M')
+    }
+  },
+  // 文件上传成功时的钩子
+  handleSuccess(res, file, fileList) {
+    this.$message.success('文件上传成功')
+  },
+  // 文件上传失败时的钩子
+  handleError(err, file, fileList) {
+    this.$message.error('文件上传失败')
   },
 }
 </script>
