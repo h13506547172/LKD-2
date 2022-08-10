@@ -125,7 +125,7 @@
                     <el-col :span="6"
                       ><div class="grid-content bg-purple">
                         <span> 完成时间 : </span>
-                        <span>{{ list.updateTime }}</span>
+                        <span>{{ list.updateTime | handleTime }}</span>
                       </div></el-col
                     >
                     <el-col :span="6"
@@ -160,7 +160,7 @@
                     <el-col :span="6"
                       ><div class="grid-content bg-purple">
                         <span> 创建时间 : </span>
-                        <span>{{ list.createTime }}</span>
+                        <span>{{ list.createTime | handleTime }}</span>
                       </div></el-col
                     >
                     <el-col :span="6"
@@ -208,6 +208,7 @@ import TaskList from '@/components/TaskList'
 // api
 import { orderSearchList } from '@/api/order'
 import repeatButton from '@/components/repeatButton/index.vue'
+import moment from 'moment'
 export default {
   data() {
     return {
@@ -242,6 +243,9 @@ export default {
       } else if (val === 3) {
         return '出货失败'
       }
+    },
+    handleTime(val) {
+      return moment(val).format('YYYY-MM-DD HH:mm:ss')
     },
   },
   methods: {
