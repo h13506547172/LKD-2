@@ -84,17 +84,14 @@ export function getPartner(params) {
   })
 }
 
-// topValue	10	前几的商品
-// start	2020-01-01	开始日期
-// end	2020-01-31
-///order-service/report/skuTop/:topValue/:start/:end
-//  http://likede2-admin.itheima.net/likede/api/order-service/report/skuTop/10/2022-08-01/2022-08-09
-export function getSkuTop() {
-  return request({
-    url: `/order-service/report/skuTop/ +${topValue}
-      +
-      ${start} +
-      ${end}`,
-    method: 'get',
-  })
-}
+// // topValue	10	前几的商品
+// // start	2020-01-01	开始日期
+// // end	2020-01-31
+// ///order-service/report/skuTop/:topValue/:start/:end
+// //  http://likede2-admin.itheima.net/likede/api/order-service/report/skuTop/10/2022-08-01/2022-08-09
+// export function getSkuTop(topValue, start, end) {
+//   return request({
+//     url: `/order-service/report/skuTop/${topValue}/${start}/${end}`,
+//     method: 'get',
+//   })
+// }

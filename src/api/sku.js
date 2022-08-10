@@ -80,6 +80,6 @@ export function uploadImage(fileName) {
   return request({
     url: '/vm-service/sku/fileUpload',
     method: 'POST',
-    data: { fileName },
+    data: fileName,
   })
 }
