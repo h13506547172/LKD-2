@@ -47,7 +47,7 @@
                   <el-col :span="8"
                     ><div class="grid-cont">
                       <h2>{{ (OrderAmount / 10000).toFixed(2) }}</h2>
-                      <p>当月销售额（元）</p>
+                      <p>当月销售额（万元）</p>
                     </div></el-col
                   >
                   <el-col :span="8"
