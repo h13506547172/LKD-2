@@ -43,9 +43,6 @@
           </repeatButton>
           <!-- 弹框 S-->
 
-          <!-- 弹框 E-->
-
-          <!-- 弹框 S-->
           <el-dialog
             title="导入数据"
             :visible="taskMake"
@@ -54,56 +51,8 @@
             class="dialogVisible"
             @close="taskMake = false"
           >
-            <div>
-              <el-upload
-                drag
-                :limit="limitNum"
-                :auto-upload="false"
-                accept=".xls, .xlsx"
-                :before-upload="beforeUploadFile"
-                :on-change="fileChange"
-                :on-exceed="exceedFile"
-                :on-success="handleSuccess"
-                :on-error="handleError"
-                :file-list="fileExelList"
-              >
-                <i class="el-icon-upload"></i>
-                <div class="el-upload__text">
-                  将文件拖到此处，或<em>点击上传</em>
-                </div>
-                <div class="el-upload__tip" slot="tip">
-                  只能上传xlsx文件，且不超过10M
-                </div>
-              </el-upload>
-              <br />
-              <el-button size="small" type="primary" @click="uploadFile"
-                >立即上传</el-button
-              >
-              <el-button size="small">取消</el-button>
-            </div>
-
+            <uploadExcel @CancelBtn="taskMake = false"></uploadExcel>
             <!-- upload -->
-            <span slot="footer" class="dialog-footer">
-              <span
-                slot="footer"
-                class="dialog-footer operation"
-                style="justify-content: center"
-              >
-                <repeatButton
-                  type="taskMake"
-                  size="large"
-                  @layclick="taskMake = false"
-                  >取消</repeatButton
-                >
-                <repeatButton
-                  type="success"
-                  size="large"
-                  @layclick="transformFn"
-                >
-                  确定</repeatButton
-                >
-              </span>
-            </span>
           </el-dialog>
           <!-- 弹框 E-->
         </div>
@@ -314,7 +263,7 @@ import {
   uploadImage,
 } from '@/api/sku'
 import repeatButton from '@/components/repeatButton/index.vue'
-
+import uploadExcel from './component/upload.vue'
 export default {
   name: 'goodsManager',
   data() {
@@ -365,6 +314,7 @@ export default {
   components: {
     TaskList,
     repeatButton,
+    uploadExcel,
     // createOrReviseDialog,
   },
   created() {
@@ -410,7 +360,9 @@ export default {
     },
     // 搜索列表
     async goodSearchFn() {
-      const res = await getSkuSearchList({ skuName: this.form.searchName })
+      const res = await getSkuSearchList({
+        skuName: this.form.searchName ? this.form.searchName : '',
+      })
       this.tableData = res.data.currentPageRecords
       this.results = res.data
       this.pageIndex = this.results.pageIndex
@@ -492,18 +444,18 @@ export default {
       // console.log(res)
     },
 
-    // 上传excel
-    async uploadFile() {
-      this.taskMake = false
-      if (this.fileList.length === 0) {
-        this.$message.warning('请上传文件')
-      } else {
-        let form = new FormData()
-        form.append('file', this.fileList)
-        const res = await transfromData({ form })
-        console.log(res)
-      }
-    },
+    // // 上传excel
+    // async uploadFile() {
+    //   this.taskMake = false
+    //   if (this.fileExelList.length === 0) {
+    //     this.$message.warning('请上传文件')
+    //   } else {
+    //     let form = new FormData()
+    //     form.append('file', this.fileExelList)
+    //     const res = await transfromData({ form })
+    //     console.log(res)
+    //   }
+    // },
 
     // 图片
     async handleAvatarSuccess(res, file) {
@@ -522,43 +474,42 @@ export default {
       }
       return isJPG && isLt2M
     },
-  },
-
-  // excel
-  // 文件超出个数限制时的钩子
-  exceedFile(files, fileList) {
-    this.$message.warning(
-      `只能选择 ${this.limitNum} 个文件，当前共选择了 ${
-        files.length + fileList.length
-      } 个`,
-    )
-  },
-  // 文件状态改变时的钩子
-  fileChange(file, fileList) {
-    console.log(file.raw)
-    this.fileList.push(file.raw)
-    console.log(this.fileList)
-  },
-  // 上传文件之前的钩子, 参数为上传的文件,若返回 false 或者返回 Promise 且被 reject，则停止上传
-  beforeUploadFile(file) {
-    console.log('before upload')
-    console.log(file)
-    let extension = file.name.substring(file.name.lastIndexOf('.') + 1)
-    let size = file.size / 1024 / 1024
-    if (extension !== 'xlsx') {
-      this.$message.warning('只能上传后缀是.xlsx的文件')
-    }
-    if (size > 10) {
-      this.$message.warning('文件大小不得超过10M')
-    }
-  },
-  // 文件上传成功时的钩子
-  handleSuccess(res, file, fileList) {
-    this.$message.success('文件上传成功')
-  },
-  // 文件上传失败时的钩子
-  handleError(err, file, fileList) {
-    this.$message.error('文件上传失败')
+    // // excel
+    // // 文件超出个数限制时的钩子
+    // exceedFile(files, fileExelList) {
+    //   this.$message.warning(
+    //     `只能选择 ${this.limitNum} 个文件，当前共选择了 ${
+    //       files.length + fileExelList.length
+    //     } 个`,
+    //   )
+    // },
+    // // 文件状态改变时的钩子
+    // fileChange(file, fileExelList) {
+    //   console.log(file.raw)
+    //   this.fileExelList.push(file.raw)
+    //   console.log(this.fileExelList)
+    // },
+    // // 上传文件之前的钩子, 参数为上传的文件,若返回 false 或者返回 Promise 且被 reject，则停止上传
+    // beforeUploadFile(file) {
+    //   console.log('before upload')
+    //   console.log(file)
+    //   let extension = file.name.substring(file.name.lastIndexOf('.') + 1)
+    //   let size = file.size / 1024 / 1024
+    //   if (extension !== 'xlsx') {
+    //     this.$message.warning('只能上传后缀是.xlsx的文件')
+    //   }
+    //   if (size > 10) {
+    //     this.$message.warning('文件大小不得超过10M')
+    //   }
+    // },
+    // // 文件上传成功时的钩子
+    // handleSuccess(res, file, fileExelList) {
+    //   this.$message.success('文件上传成功')
+    // },
+    // // 文件上传失败时的钩子
+    // handleError(err, file, fileExelList) {
+    //   this.$message.error('文件上传失败')
+    // },
   },
 }
 </script>
