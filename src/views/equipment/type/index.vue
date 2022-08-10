@@ -1,16 +1,32 @@
 <template>
-  <div>设备类型管理</div>
+  <div>
+    <searchBar @passData='passDataFn'></searchBar>
+    <infoBar :name='name'></infoBar>
+  </div>
 </template>
 
 <script>
+import searchBar from "./component/searchBar.vue";
+import infoBar from "./component/infoBar.vue";
+
 export default {
+  components: {
+    searchBar,
+    infoBar
+  },
   data() {
-    return {}
+    return {
+      name: ''
+    }
   },
 
   created() {},
 
-  methods: {},
+  methods: {
+    passDataFn(e){
+      this.name = e.name
+    }
+  },
 }
 </script>
 
