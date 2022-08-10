@@ -40,19 +40,19 @@
                 <el-row>
                   <el-col :span="8"
                     ><div class="grid-cont">
-                      <h2>{{ OrderCount ? OrderCount : 3631 }}</h2>
+                      <h2>{{ OrderCount }}</h2>
                       <p>当月销售量（个）</p>
                     </div></el-col
                   >
                   <el-col :span="8"
                     ><div class="grid-cont">
-                      <h2>{{ OrderAmount ? OrderAmount / 10000 : 2.51 }}</h2>
+                      <h2>{{ (OrderAmount / 10000).toFixed(2) }}</h2>
                       <p>当月销售额（元）</p>
                     </div></el-col
                   >
                   <el-col :span="8"
                     ><div class="grid-cont">
-                      <h2>{{ TotalBill ? TotalBill / 100 : 34.46 }}</h2>
+                      <h2>{{ TotalBill / 100 }}</h2>
                       <p>当月分成（元）</p>
                     </div></el-col
                   >
@@ -101,7 +101,7 @@
           <el-col :span="5"
             ><div class="grid-content bg-purple">
               <span>
-                笔数统计：<i> {{ OrderCount ? OrderCount : 3631 }}</i> 个</span
+                笔数统计：<i> {{ OrderCount }}</i> 个</span
               >
             </div></el-col
           >
@@ -109,7 +109,7 @@
             ><div class="grid-content bg-purple-light">
               <span>
                 收入统计：
-                <i>{{ OrderAmount ? OrderAmount : 25123.75 }}</i> 元</span
+                <i>{{ OrderAmount }}</i> 元</span
               >
             </div></el-col
           >
@@ -117,7 +117,7 @@
             ><div class="grid-content bg-purple">
               <span>
                 分成统计：
-                <i> {{ TotalBill ? TotalBill / 100 : 34.46 }}</i> 元</span
+                <i> {{ TotalBill }}</i> 元</span
               >
             </div></el-col
           >
@@ -135,7 +135,7 @@
 
           <el-table-column prop="orderTotalMoney" label="收入（元）">
             <template v-slot="scope">
-              <span>+</span> {{ scope.row.orderTotalMoney / 100 }}
+              <span>+</span> {{ (scope.row.orderTotalMoney * 0.01).toFixed(2) }}
             </template>
           </el-table-column>
           <el-table-column prop="orderCount" label="笔数"> </el-table-column>
@@ -168,7 +168,8 @@ export default {
       form: {
         name: '',
         timeDate: [
-          moment().subtract(7, 'day').format('YYYY-MM-DD HH:mm:ss'),
+          // moment().subtract(8, 'day').format('YYYY-MM-DD HH:mm:ss'),
+          moment().format('YYYY-MM') + '-01',
           moment().format('YYYY-MM-DD HH:mm:ss'),
         ],
         // '2022-08-09',
@@ -193,6 +194,9 @@ export default {
   created() {
     this.getPartnerCollect()
     this.getPartner()
+    this.getTotalBill()
+    this.getOrderAmount()
+    this.getOrderCount()
   },
 
   computed: {},
@@ -203,10 +207,12 @@ export default {
     // : http://likede2-admin.itheima.net/likede/api/order-service/report/partnerCollect?pageIndex=1&pageSize=10&start=2022-08-01&end=2022-08-09
     async getPartnerCollect() {
       const res = await getPartnerCollect({
-        pageSize: 10,
-        start: '2022-08-01',
-        end: '2022-08-09',
+        pageSize: 100,
+        start: moment().format('YYYY-MM') + '-01',
+        end: moment().format('YYYY-MM-DD'),
       })
+      // start: moment(this.form.timeDate[0]).format('YYYY-MM-DD HH:mm:ss'),
+      //   end: moment(this.form.timeDate[1]).format('YYYY-MM-DD HH:mm:ss'),
       // console.log(res)
       this.PartnerCollectList = res.data.currentPageRecords
       this.PartnerCollectList.forEach((ele) => {
@@ -215,41 +221,52 @@ export default {
         this.totalBill = this.totalBill + ele.totalBill / 100
       })
     },
-    //  获取一定时间范围之内的分成总数
-    //  http://likede2-admin.itheima.net/likede/api/order-service/report/totalBill?start=2022-08-01+00:00:00&end=2022-08-09+23:59:59
-    async searchFn() {
-      console.log(moment(this.form.timeDate[0]).format('YYYY-MM-DD+HH:mm:ss'))
-
+    async getTotalBill() {
       const res1 = await getTotalBill({
         start: moment(this.form.timeDate[0]).format('YYYY-MM-DD HH:mm:ss'),
         end: moment(this.form.timeDate[1]).format('YYYY-MM-DD HH:mm:ss'),
       })
       this.TotalBill = res1.data
       // console.log(this.TotalBill)
+    },
 
+    async getOrderAmount() {
       const res2 = await getOrderAmount({
         start: moment(this.form.timeDate[0]).format('YYYY-MM-DD HH:mm:ss'),
         end: moment(this.form.timeDate[1]).format('YYYY-MM-DD HH:mm:ss'),
       })
       this.OrderAmount = res2.data / 100
-
+    },
+    async getOrderCount() {
       const res3 = await getOrderCount({
         start: moment(this.form.timeDate[0]).format('YYYY-MM-DD HH:mm:ss'),
         end: moment(this.form.timeDate[1]).format('YYYY-MM-DD HH:mm:ss'),
       })
       this.OrderCount = res3.data
+    },
+
+    //  获取一定时间范围之内的分成总数
+    //  http://likede2-admin.itheima.net/likede/api/order-service/report/totalBill?start=2022-08-01+00:00:00&end=2022-08-09+23:59:59
+    async searchFn() {
+      console.log(moment(this.form.timeDate[0]).format('YYYY-MM-DD+HH:mm:ss'))
 
       const res = await getPartnerCollect({
+        pageIndex: 1,
+        pageSize: 10,
         partnerName: this.form.name,
         start: this.form.timeDate[0]
-          ? moment(this.form.timeDate[0]).format('YYYY-MM-DD HH:mm:ss')
+          ? moment(this.form.timeDate[0]).format('YYYY-MM-DD')
           : null,
         end: this.form.timeDate[1]
-          ? moment(this.form.timeDate[1]).format('YYYY-MM-DD HH:mm:ss')
+          ? moment(this.form.timeDate[1]).format('YYYY-MM-DD')
           : null,
       })
       console.log(res, this.form.name)
       this.PartnerCollectList = res.data.currentPageRecords
+      // 重新渲染数据
+      this.getTotalBill()
+      this.getOrderAmount()
+      this.getOrderCount()
     },
     // 获取一定时间范围之内的收入
     //  http://likede2-admin.itheima.net/likede/api/order-service/report/orderAmount?start=2022-08-01+00:00:00&end=2022-08-09+23:59:59
@@ -257,6 +274,8 @@ export default {
     // 获取一定时间范围之内的订单总数
     //  http://likede2-admin.itheima.net/likede/api/order-service/report/orderCount?start=2022-08-01+00:00:00&end=2022-08-09+23:59:59
     // getOrderCount() {},
+
+    // 获取合作商列表
     async getPartner() {
       const res = await getPartner({ pageIndex: 1, pageSize: 10 })
       console.log(this.form.name)

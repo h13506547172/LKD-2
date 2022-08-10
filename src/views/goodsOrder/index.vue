@@ -36,7 +36,11 @@
         <TaskList :tableData="tableData">
           <el-table-column type="index" :index="indexMethod" prop label="序号">
           </el-table-column>
-          <el-table-column prop="orderNo" label="订单编号"> </el-table-column>
+          <el-table-column prop="orderNo" label="订单编号">
+            <template v-slot="scope">
+              <span class="sin-line"> {{ scope.row.orderNo }}</span>
+            </template>
+          </el-table-column>
           <el-table-column prop="skuName" label="商品名称"> </el-table-column>
           <el-table-column prop="price" label="订单金额">
             <template v-slot="scope">
@@ -51,7 +55,7 @@
           </el-table-column>
           <el-table-column prop="createTime" label="订单日期">
             <template v-slot="scope">
-              {{ scope.row.createTime }}
+              {{ scope.row.createTime.replace(/T/gi, ' ') }}
             </template>
           </el-table-column>
           <el-table-column prop label="操作">
@@ -73,10 +77,31 @@
         >
           <div class="pic">
             <div>
-              <img src="../../assets/image/weixin.png" alt="" />
-              <span>出货成功</span>
+              <img
+                v-if="list.status === 2"
+                src="../../assets/image/weixin.png"
+                alt=""
+              />
+              <img
+                v-else-if="list.status === 0"
+                src="../../assets/image/下载 (3)出货失败.png"
+                alt=""
+              />
+              <span v-if="list.status === 2">出货成功</span>
+              <span v-else-if="list.status === 0">未支付</span>
             </div>
-            <div><img src="../../assets/image/pic.png" alt="" /></div>
+            <div>
+              <img
+                v-if="list.status === 2"
+                src="../../assets/image/pic.png"
+                alt=""
+              />
+              <img
+                v-else-if="list.status === 0"
+                src="../../assets/image/失败出货.png"
+                alt=""
+              />
+            </div>
           </div>
           <!-- list -->
           <div class="list">
@@ -100,7 +125,7 @@
                     <el-col :span="6"
                       ><div class="grid-content bg-purple">
                         <span> 完成时间 : </span>
-                        <span>{{ list.updateTime }}</span>
+                        <span>{{ list.updateTime | handleTime }}</span>
                       </div></el-col
                     >
                     <el-col :span="6"
@@ -135,7 +160,7 @@
                     <el-col :span="6"
                       ><div class="grid-content bg-purple">
                         <span> 创建时间 : </span>
-                        <span>{{ list.createTime }}</span>
+                        <span>{{ list.createTime | handleTime }}</span>
                       </div></el-col
                     >
                     <el-col :span="6"
@@ -183,6 +208,7 @@ import TaskList from '@/components/TaskList'
 // api
 import { orderSearchList } from '@/api/order'
 import repeatButton from '@/components/repeatButton/index.vue'
+import moment from 'moment'
 export default {
   data() {
     return {
@@ -217,6 +243,9 @@ export default {
       } else if (val === 3) {
         return '出货失败'
       }
+    },
+    handleTime(val) {
+      return moment(val).format('YYYY-MM-DD HH:mm:ss')
     },
   },
   methods: {
@@ -274,14 +303,14 @@ export default {
         endDate: this.form.timeDate[1] ? this.form.timeDate[1] : null,
       })
 
-      console.log(res.data)
+      // console.log(res.data)
       this.results = res.data
       this.pageIndex = res.data.pageIndex
       this.tableData = res.data.currentPageRecords
     },
     //查看详情
     detailFn(val) {
-      console.log(val)
+      // console.log(val)
       this.list = val
       this.orderVisible = true
     },
@@ -371,5 +400,13 @@ export default {
   .el-form-item {
     margin-bottom: 0;
   }
+}
+.sin-line {
+  /* 第一步：让文字强制一行显示 */
+  white-space: nowrap;
+  /* 第二步：溢出隐藏 */
+  overflow: hidden;
+  /* 第三步：溢出的内容省略号显示 */
+  text-overflow: ellipsis;
 }
 </style>
