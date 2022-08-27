@@ -44,7 +44,7 @@
                 <el-input-number
                   v-model="strategyForm.methods"
                   controls-position="right"
-                  style="width: 400px"
+                  style="width: 280px"
                   placeholder="请输入"
                 ></el-input-number>
               </el-form-item>
@@ -245,7 +245,7 @@ export default {
     // 上一页
     async prePage() {
       this.listpageIndex--
-      if (this.pageIndex < 1) return
+      if (this.listpageIndex < 1) return
       const res = await getStrategyList({
         pageIndex: this.listpageIndex,
         pageSize: 10,
@@ -402,35 +402,40 @@ export default {
   width: 630px;
   height: 484px;
 }
-.dialogVisible {
-  // .el-dialog .el-dialog__body .el-form-item .el-form-item__content {
-  //   width: 396px;
-  // }
-  .arrow-up {
-    position: absolute;
-    right: 13px;
-    top: 0;
-    background-color: #eee;
-    width: 25px;
-    height: 15px;
-    text-align: center;
-  }
-  .arrow-down {
-    position: absolute;
-    right: 13px;
-    top: 24px;
-    background-color: #eee;
-    width: 25px;
-    height: 15px;
-    text-align: center;
-  }
+// .el-dialog .el-dialog__body .el-form-item .el-form-item__content {
+//   width: 396px;
+// }
+.arrow-up {
+  position: absolute;
+  right: 13px;
+  top: 0;
+  background-color: #eee;
+  width: 25px;
+  height: 15px;
+  text-align: center;
 }
+.arrow-down {
+  position: absolute;
+  right: 13px;
+  top: 24px;
+  background-color: #eee;
+  width: 25px;
+  height: 15px;
+  text-align: center;
+}
+
 .search {
   background-color: #fff;
   margin-bottom: 20px;
   padding: 15px;
   .el-form-item {
     margin-bottom: 0;
+  }
+}
+.dialogVisible {
+  /deep/ .el-dialog {
+    width: 400px !important;
+    border-radius: 10px !important;
   }
 }
 </style>

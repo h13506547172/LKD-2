@@ -12,13 +12,7 @@ import personnel from './modules/personnel'
 import goods from './modules/goods'
 import strategy from './modules/strategy'
 import bill from './modules/bill'
-import goodsOrder from "./modules/goodsOrder";
-
-
-
-
-
-
+import goodsOrder from './modules/goodsOrder'
 
 /**
  * Note: sub-menu only appear when route children.length >= 1
@@ -85,7 +79,6 @@ export const asyncRoutes = [
   strategy,
   goodsOrder,
   bill,
-  
 ]
 
 const createRouter = () =>

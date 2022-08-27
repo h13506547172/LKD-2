@@ -24,7 +24,7 @@
             <el-row>
               <el-col
                 :span="2.4"
-                v-for="item in propChannelList"
+                v-for="item in ChannelList"
                 :key="item.channelId"
               >
                 <div class="item">
@@ -40,7 +40,10 @@
                     </div>
                   </div>
                   <div style="margin-top: 14px">
-                    <a href="javascript:;" class="addbtn" @click="addGoodsFn"
+                    <a
+                      href="javascript:;"
+                      class="addbtn"
+                      @click="addGoodsFn(item.channelCode)"
                       >添加</a
                     >
                     <a
@@ -200,8 +203,6 @@ export default {
       curSkuName: '',
       // 选中的商品数据
       curSku: {},
-      // 子组件
-      propChannelList: this.ChannelList,
     }
   },
 
@@ -265,7 +266,8 @@ export default {
       this.addGoodsList = res.data.currentPageRecords
     },
     // 打开添加商品面板
-    async addGoodsFn() {
+    async addGoodsFn(channelCode) {
+      this.curSku.channelCode = channelCode
       await this.getvmService(1)
       this.addGoodsShow = true
     },
@@ -288,36 +290,23 @@ export default {
     },
     // 选中商品
     curSkuFn(obj) {
-      this.curSkuName = obj.skuName
-      // console.log(obj);
-      this.curSku = {
-        skuId: obj.skuId,
-        skuImage: obj.skuImage,
-        skuName: obj.skuName,
-      }
+      this.curSkuName = obj.skuName    
+      this.curSku.skuId = obj.skuId
+      this.curSku.skuImage = obj.skuImage
+      this.curSku.skuName = obj.skuName
       // console.log(this.curSku)
     },
     // 更换添加商品
     confirmGoods() {
-      this.propChannelList.forEach((item) => {
-        if ((item.skuId === this.curSku.skuId)) {
+      // console.log(this.curSku)
+      this.ChannelList.forEach(item=>{
+        if (item.channelCode===this.curSku.channelCode) {
           item.sku = this.curSku
-          console.log(item)
         }
       })
-      console.log(this.propChannelList)
-      // this.$emit('update', this.curSku)
-      this.addGoodsShow = false
     },
   },
-  watch: {
-    ChannelList: {
-      deep: true,
-      handler(val) {
-        this.propChannelList = val
-      },
-    },
-  },
+  watch: {},
 }
 </script>
 
